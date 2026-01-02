@@ -1,38 +1,40 @@
-# [Project Name]
+# Auto-chess
 
 ## Project Information
 
 | Field | Value |
 |-------|-------|
-| **Student** | [Full Name] |
-| **Group** | [Group Number] |
-| **Supervisor** | [Supervisor Name] |
-| **Date** | [Submission Date] |
+| Student: | [Konstantin Kernazhytski] |
+| **Group** | [Java] |
+| **Supervisor** | [Pavlo Andriiash] |
+| **Date** | [1/7/2026] |
 
 ## Links
 
 | Resource | URL |
 |----------|-----|
 | Production | [Deployed Application URL] |
-| Repository | [GitHub/GitLab URL] |
+| Repository | [https://github.com/orgs/diploma-sdc-2025/repositories] |
 | API Docs | [Swagger/OpenAPI URL] |
-| Design | [Figma/Design System URL] |
+| Design | [https://www.figma.com/design/4Eq9PM6MOgPSc1SZfwbQDA/auto-chess-design?node-id=0-1&p=f&t=C2JDTlssiz9inlgN-0]|
 
 ## Elevator Pitch
 
 [One paragraph (3-5 sentences) that explains: What is the product? Who is it for? What problem does it solve? What makes it unique?]
 
+AutoChess Classic is a strategy game that reimagines traditional chess as an auto-battler, where players focus on planning, piece combinations, and positioning while battles resolve automatically. It is designed for both casual strategy players who want quick, accessible matches and chess enthusiasts looking for a fresh take on familiar mechanics. The game addresses the problem of long, complex chess matches by offering short sessions that still preserve strategic depth. What makes AutoChess Classic unique is its combination of classic chess pieces with roguelike progression and data-driven balancing, ensuring high replayability and evolving gameplay. Matches typically last under 10 minutes, making the game well suited for modern, time-constrained players.
+
 ## Evaluation Criteria Checklist
 
 | # | Criterion | Status | Documentation |
 |---|-----------|--------|---------------|
-| 1 | [Criterion 1 Name] | ✅/⚠️/❌ | [Link to criteria/criterion-1.md] |
-| 2 | [Criterion 2 Name] | ✅/⚠️/❌ | [Link to criteria/criterion-2.md] |
-| 3 | [Criterion 3 Name] | ✅/⚠️/❌ | [Link to criteria/criterion-3.md] |
-| 4 | [Criterion 4 Name] | ✅/⚠️/❌ | [Link to criteria/criterion-4.md] |
-| 5 | [Criterion 5 Name] | ✅/⚠️/❌ | [Link to criteria/criterion-5.md] |
-| 6 | [Criterion 6 Name] | ✅/⚠️/❌ | [Link to criteria/criterion-6.md] |
-| 7 | [Criterion 7 Name] | ✅/⚠️/❌ | [Link to criteria/criterion-7.md] |
+| 1 | [Back-end] | ✅/⚠️ | [Link to criteria/criterion-1.md] |
+| 2 | [Well-designed UX] | ✅/⚠️ | [Link to criteria/criterion-2.md] |
+| 3 | [Database] | ✅/⚠️ | [Link to criteria/criterion-3.md] |
+| 4 | [Real-time Analytics] | ✅/⚠️| [Link to criteria/criterion-4.md] |
+| 5 | [Containerization] | ✅ | [Link to criteria/criterion-5.md] |
+| 6 | [API documentation] | ✅/⚠️/❌ | [Link to criteria/criterion-6.md] |
+| 7 | [Automated tests ≥ 70% coverage] | ✅ | [Link to criteria/criterion-7.md] |
 
 ## Documentation Navigation
 
@@ -43,5 +45,5 @@
 
 ---
 
-*Document created: [Date]*
-*Last updated: [Date]*
+*Document created: [01.02.2026]*
+*Last updated: [01.02.2026]*
