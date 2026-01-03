@@ -37,7 +37,7 @@ The system is implemented as a Spring Boot microservices backend (Auth, Game, Ba
 
 | Objective | Metric | Current Value | Target Value | Timeline |
 |-----------|--------|---------------|--------------|----------|
-| [Provide fully functional and working backend behavior] | [End-to-end flow works + API response time] | [All done] | [<500ms average for main game actions] | [Before defense] |
+| [Provide fully functional and working backend behavior] | [End-to-end flow works + API response time] | [All Done] | [<500ms average for main game actions] | [Before defense] |
 | [Meet diploma testing requirements] | [Automated test coverage] | [All done] | [≥70% line coverage (JaCoCo)] | [Before defense] |
 | [Ensure containerized deployment] | [Services running as Docker containers in cloud] | [Not deployed] | [5 services deployed on Azure App Service for Containers] | [Before defense] |
 | [Provide complete API documentation] | [Swagger coverage] | [All done] | [100% endpoint documentation (5 Swagger UIs)] | [Before defense] |
