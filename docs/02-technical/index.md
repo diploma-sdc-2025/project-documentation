@@ -12,76 +12,73 @@ This section covers the technical architecture, design decisions, and implementa
 
 ### High-Level Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         [System Name]                            │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│   ┌─────────────┐     ┌─────────────┐     ┌─────────────┐      │
-│   │   Client    │────▶│   Backend   │────▶│  Database   │      │
-│   │  (Web/App)  │◀────│   (API)     │◀────│             │      │
-│   └─────────────┘     └─────────────┘     └─────────────┘      │
-│         │                    │                                   │
-│         │                    ▼                                   │
-│         │             ┌─────────────┐                           │
-│         │             │  External   │                           │
-│         │             │  Services   │                           │
-│         │             └─────────────┘                           │
-│         │                    │                                   │
-│         ▼                    ▼                                   │
-│   ┌─────────────────────────────────────┐                       │
-│   │           [Cache/CDN/etc.]          │                       │
-│   └─────────────────────────────────────┘                       │
-│                                                                  │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-[Replace with your actual architecture diagram or link to assets/diagrams/]
+[High-Level Architecture](../assets/diagrams/High-Level-Architecture.png)
 
 ### System Components
 
 | Component | Description | Technology |
-|-----------|-------------|------------|
-| **Frontend** | [User interface description] | [Framework] |
-| **Backend** | [API/business logic description] | [Framework] |
-| **Database** | [Data storage description] | [DBMS] |
-| **Cache** | [Caching layer description] | [Technology] |
-| **External Services** | [Third-party integrations] | [Services] |
+| --------- | ----------- | ---------- |
+| **Client (Interaction layer)** | API interaction via Swagger UI and Postman; UX flows shown in Figma | Swagger UI, Postman, Figma |
+| **Auth Service** | Registration, login, JWT issuance/validation, user storage | Spring Boot, Spring Security, JWT, PostgreSQL |
+| **Matchmaking Service** | Queue players, pair opponents, create match sessions | Spring Boot, PostgreSQL |
+| **Game Service**| Core game state, shop, economy, board management, upgrades | Spring Boot, Spring Data JPA, PostgreSQL |
+| **Battle Service** | Executes battle resolution; integrates with Stockfish for analysis/move selection | Spring Boot, Stockfish (UCI), PostgreSQL |
+| **Analytics/Monitoring** | Health checks and gameplay/system metrics | Spring Boot Actuator, Micrometer |
+| **Databases** | Database-per-service; isolated schemas per microservice | PostgreSQL × N |
+| **Deployment**| Containerized services deployed to cloud | Docker, Docker Compose, Azure App Service |
+
 
 ### Data Flow
 
 ```
-[User Action] → [Frontend] → [API Request] → [Backend]
-                                                 │
-                                                 ▼
-                                          [Business Logic]
-                                                 │
-                                                 ▼
-                                          [Data Layer]
-                                                 │
-                                                 ▼
-                                          [Database]
-                                                 │
-                                                 ▼
-                                          [Response]
-                                                 │
-[UI Update] ← [Frontend] ← [API Response] ←─────┘
+[Player Action via Postman/Swagger]
+        │
+        ▼
+[Auth Service] → JWT issued
+        │
+        ▼
+[Matchmaking Service] join queue
+        │
+        ▼
+[Game Service] match created + initial state
+        │
+        ▼
+[Game Service] shop/purchase/place/upgrade actions
+        │
+        ▼
+[Battle Service] battle requested
+        │
+        ├─▶ [Stockfish] analyze position / choose moves (UCI)
+        │
+        ▼
+[Battle result stored] → [Game state updated] → [Metrics emitted]
+        │
+        ▼
+[Repeats until 1 player remains alive]
+        │
+        ▼
+
+[Game ends] → [Final results shown]
 ```
 
 ## Key Technical Decisions
 
 | Decision | Rationale | Alternatives Considered |
-|----------|-----------|------------------------|
-| [Decision 1] | [Why this choice] | [Other options] |
-| [Decision 2] | [Why this choice] | [Other options] |
-| [Decision 3] | [Why this choice] | [Other options] |
+| -------- | --------- | ----------------------- |
+| Microservices architecture (multiple Spring Boot services) | Demonstrates distributed systems skills; separation of concerns; aligns with diploma complexity goals | Monolith REST API (simpler but less effective)|
+| Database-per-service (PostgreSQL per microservice) | Aligns with microservices best practice; isolates data ownership and schema changes | Shared database (simpler but couples services)|
+| REST APIs + Swagger for primary interaction | Easy testing and documentation; fits diploma requirement; works without frontend | message queue (adds complexity) |
+| WebSockets for real-time updates | Enables push-based updates for match/battle status;| Simple REST|
+| Stockfish used by Battle Service | Provides strong chess analysis and move selection, avoids implementing a chess engine from scratch | Fully custom engine too complex|
+| Docker + Azure App Service for Containers | Reproducible environments; mandatory diploma deployment requirement | AWS  |
+
 
 ## Security Overview
 
 | Aspect | Implementation |
 |--------|----------------|
-| **Authentication** | [Method: JWT/Session/OAuth] |
-| **Authorization** | [RBAC/ABAC/ACL] |
-| **Data Protection** | [Encryption at rest/in transit] |
-| **Input Validation** | [Validation approach] |
-| **Secrets Management** | [How secrets are stored] |
+| **Authentication** | JWT Bearer tokens issued by Auth Service (login/register) |
+| **Authorization** | Role-based access at endpoint level |
+| **Data Protection** | HTTPS in production (Azure); passwords hashed with BCrypt; no plain-text credentials stored |
+| **Input Validation** | Spring validation annotations on DTOs; consistent error responses |
+| **Secrets Management** | Environment variables for JWT secret, DB credentials;|
