@@ -34,8 +34,6 @@
 
 ## Stakeholder Map
 
-[Optional: Include a stakeholder influence/interest matrix or list]
-
 ### High Influence / High Interest
 
 - Diploma Committee - evaluates project quality, technical complexity, and fulfillment of academic requirements.
