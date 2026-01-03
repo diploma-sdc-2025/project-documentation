@@ -62,4 +62,4 @@ Limitations that affect the project:
 | Docker            | Technical | Docker Inc.          | ✅      |
 | Swagger / OpenAPI | Technical | OpenAPI Initiative   | ✅      |
 | Figma             | External  | Figma Inc.           | ✅      |
-| Stockfish     	|Technical|	| Open source          | ✅      |
+| Stockfish     	| Technical | Open source          | ✅      |
