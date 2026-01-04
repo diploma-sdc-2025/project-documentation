@@ -12,7 +12,7 @@ This section covers the technical architecture, design decisions, and implementa
 
 ### High-Level Architecture
 
-[High-Level Architecture](../assets/diagrams/High-Level-Architecture.png)
+[High-Level Architecture diagram](../assets/diagrams/High-Level-Architecture.png)
 
 ### System Components
 
