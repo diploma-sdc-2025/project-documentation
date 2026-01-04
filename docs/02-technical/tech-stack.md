@@ -58,7 +58,7 @@
 |------|---------|-------|
 | **IDE** | VS Code, IntelliJ | VS Code for documentation; IntelliJ used for Spring Boot |
 | **Version Control** | Git + GitHub | All in one main branch (separated repos) |
-| **Build Tool** | | Maven or Gradle | Consistent builds across services |
+| **Build Tool** | Maven or Gradle | Consistent builds across services |
 | **Containerization** | Docker + Docker Compose | Local orchestration of services + dependencies|
 | **Testing** | JUnit 5 + Mockito + JaCoCo | Coverage target: ≥70% |
 | **API Testing** | Postman + Swagger UI | Swagger for documentation + quick manual testing; Postman for flows across services |
