@@ -55,11 +55,11 @@ Limitations that affect the project:
 
 | Dependency        | Type      | Owner                | Status |
 | ----------------- | --------- | -------------------- | ------ |
-| GitHub Repository | External  | GitHub               | ✅      |
-| Azure App Service | External  | Microsoft Azure      | ✅      |
-| PostgreSQL        | Technical | PostgreSQL Community | ✅      |
-| Spring Boot       | Technical | Spring / VMware      | ✅      |
-| Docker            | Technical | Docker Inc.          | ✅      |
-| Swagger / OpenAPI | Technical | OpenAPI Initiative   | ✅      |
-| Figma             | External  | Figma Inc.           | ✅      |
-| Stockfish     	| Technical | Open source          | ✅      |
+| GitHub Repository | External  | GitHub               | ✅ |
+| Azure App Service | External  | Microsoft Azure      | ✅ |
+| PostgreSQL        | Technical | PostgreSQL Community | ✅ |
+| Spring Boot       | Technical | Spring / VMware      | ✅ |
+| Docker            | Technical | Docker Inc.          | ✅ |
+| Swagger / OpenAPI | Technical | OpenAPI Initiative   | ✅ |
+| Figma             | External  | Figma Inc.           | ✅ |
+| Stockfish     	| Technical | Open source          | ✅ |
