@@ -7,7 +7,7 @@
 | Student: | [Konstantin Kernazhytski] |
 | **Group** | [Java] |
 | **Supervisor** | [Pavlo Andriiash] |
-| **Date** | [1/7/2026] |
+| **Date** | [2026-01-07] |
 
 ## Links
 

@@ -6,7 +6,7 @@
 
 **Status:** Accepted
 
-**Date:** 01-03-2026
+**Date:** 2026-01-03
 
 ### Context
 
