@@ -66,13 +66,13 @@ iPhone 16/                   // Device frame used for mobile-first design
 
 ### Screens
 
-[Login screen](../assets/screenshots/login-page.png)
+[Login screen](../../assets/screenshots/login-page.png)
 
-[Main screen](../assets/screenshots/main-page.png)
+[Main screen](../../assets/screenshots/main-page.png)
 
-[Game screen](../assets/screenshots/game-screen.png)
+[Game screen](../../assets/screenshots/game-screen.png)
 
-[Login screen](../assets/screenshots/game-screen-no-gold.png)
+[Game screen (no gold)](../../assets/screenshots/game-screen-no-gold.png)
 
 ## Requirements Checklist
 
