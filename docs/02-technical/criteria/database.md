@@ -138,15 +138,15 @@ CREATE INDEX idx_matchmaking_history_status ON matchmaking_history(status);
 
 ### Diagrams
 
-[High level architecture](../assets/diagrams/auth-service.png)
+[auth-service](../assets/diagrams/auth-service.png)
 
-[High level architecture](../assets/diagrams/battle-service.png)
+[battle-service](../assets/diagrams/battle-service.png)
 
-[High level architecture](../assets/diagrams/analytics-service.png)
+[analytics-service](../assets/diagrams/analytics-service.png)
 
-[High level architecture](../assets/diagrams/matchmaking-service.png)
+[matchmaking-service](../assets/diagrams/matchmaking-service.png)
 
-[High level architecture](../assets/diagrams/game-service.png)
+[game-service](../assets/diagrams/game-service.png)
 
 ## Requirements Checklist
 
