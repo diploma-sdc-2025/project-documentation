@@ -5,157 +5,168 @@
 ### Deployment Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    [Cloud Provider/Server]                   │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│   ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐    │
-│   │  Container  │  │  Container  │  │    Database     │    │
-│   │  (Frontend) │  │  (Backend)  │  │    (Managed)    │    │
-│   │             │  │             │  │                 │    │
-│   │  Port: 80   │  │  Port: 3000 │  │  Port: 5432     │    │
-│   └─────────────┘  └─────────────┘  └─────────────────┘    │
-│          │                │                  │              │
-│          └────────────────┼──────────────────┘              │
-│                           │                                  │
-│                    ┌──────┴──────┐                          │
-│                    │   Reverse   │                          │
-│                    │   Proxy     │                          │
-│                    └─────────────┘                          │
-│                           │                                  │
-└───────────────────────────┼─────────────────────────────────┘
-                            │
-                      [Internet]
+┌─────────────────────────────────────────────────────────────────────┐
+│                           Microsoft Azure                           │
+│                    Ubuntu Virtual Machine (IaaS)                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌──────────────────┐  ┌──────────────────┐   ┌────────────────┐    │
+│  │  Auth Service    │  │ Matchmaking Service  |  Game Service  │    │
+│  │  (Spring Boot)   │  │  (Spring Boot)   │   |  (Spring Boot) │    │
+│  │  Port: 8081      │  │  Port: 8082      │   |  Port: 8083    │    │
+│  └──────────────────┘  └──────────────────┘   └────────────────┘    │
+│                                                                     │
+│  ┌──────────────────┐  ┌──────────────────┐                         │
+│  │ Battle Service   │  │ Analytics Service│                         │
+│  │ (Spring Boot)    │  │ (Spring Boot)    │                         │
+│  │ Port: 8084       │  │ Port: 8080       │                         │
+│  └──────────────────┘  └──────────────────┘                         │
+│                                                                     │
+│                 ┌──────────────────────────┐                        │
+│                 │        Redis (Cache)     │                        │
+│                 │        Port: 6379        │                        │
+│                 └──────────────────────────┘                        │
+│                                                                     │
+│        ┌─────────────────────────────────────────────┐              │
+│        │ Azure Database for PostgreSQL               │              │
+│        │ Port: 5432                                  │              │
+│        └─────────────────────────────────────────────┘              │
+│                                                                     │
+└───────────────────────────────┼─────────────────────────────────────┘
+                                │
+                          [ Internet ]
+
 ```
 
 ### Environments
 
-| Environment | URL | Branch |
-|-------------|-----|--------|
-| **Development** | `localhost:3000` | `feature/*` |
-| **Staging** | [staging-url] | `develop` |
-| **Production** | [production-url] | `main` |
+| Environment     | URL                              | Branch      |
+| --------------- | -------------------------------- | ----------- |
+| **Development** | `http://localhost:8080-8084`     | `feature/*` |
+| **Production**  | `http://<VM_PUBLIC_IP>:8080-8084`| `main`      |
 
-## CI/CD Pipeline
 
-### Pipeline Overview
+## CI 
+
+### Flow 
 
 ```
-┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐
-│  Commit  │──▶│  Build   │──▶│   Test   │──▶│  Deploy  │──▶│  Verify  │
-│          │   │          │   │          │   │ Staging  │   │          │
-└──────────┘   └──────────┘   └──────────┘   └──────────┘   └──────────┘
-                                                   │
-                                                   ▼
-                                            ┌──────────┐
-                                            │  Deploy  │
-                                            │   Prod   │
-                                            └──────────┘
+┌──────────────┐   ┌──────────┐   ┌──────────────┐   ┌──────────────┐
+│ Local Build  │──▶│  Commit │──▶│ GitHub      │──▶│ Manual Deploy│
+│ & Testing    │   │          │   │ Actions CI   │   │ (Azure VM)   │
+└──────────────┘   └──────────┘   └──────────────┘   └──────────────┘
+
 ```
 
-### Pipeline Steps
 
-| Step | Tool | Actions |
-|------|------|---------|
-| **Build** | [GitHub Actions/GitLab CI] | Install dependencies, compile code |
-| **Lint** | [ESLint/Prettier] | Check code style |
-| **Test** | [Jest/Pytest] | Run unit and integration tests |
-| **Security** | [Snyk/Trivy] | Scan for vulnerabilities |
-| **Deploy** | [Docker/K8s/Vercel] | Deploy to environment |
+| Step              | Tool           | Actions                           |
+| ----------------- | -------------- | --------------------------------- |
+| **Build (Local)** | Maven          | `mvn clean package`               |
+| **Test (Local)**  | JUnit          | `mvn test`                        |
+| **Commit**        | Git            | Push code to GitHub               |
+| **CI Validation** | GitHub Actions | Build & test on clean environment |
+| **Deploy**        | Docker Compose | Manual deployment to Azure VM     |
 
-### Pipeline Configuration
+CI code example (matchmaking-service)
 
-```yaml
-# Example: .github/workflows/ci.yml
-name: CI/CD Pipeline
+```yml
+name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [ "main", "master" ]
   pull_request:
-    branches: [main]
+    branches: [ "main", "master" ]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Install dependencies
-        run: [install command]
-      - name: Run tests
-        run: [test command]
-      - name: Build
-        run: [build command]
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: maven
+
+      - name: Run tests and generate coverage
+        run: mvn clean verify
+
+      - name: Upload JaCoCo report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: target/site/jacoco
 ```
 
 ## Environment Variables
 
-| Variable | Description | Required | Example |
-|----------|-------------|----------|---------|
-| `DATABASE_URL` | Database connection string | Yes | `postgres://user:pass@host:5432/db` |
-| `API_KEY` | External service API key | Yes | `***` (stored in secrets) |
-| `JWT_SECRET` | Secret for JWT signing | Yes | `***` (stored in secrets) |
-| `NODE_ENV` | Environment mode | Yes | `development` / `production` |
-| `PORT` | Application port | No | `3000` |
+| Variable          | Description               | Required | Example                                    |
+| ----------------- | ------------------------- | -------- | ------------------------------------------ |
+| `AUTH_JWT_SECRET` | JWT signing secret        | Yes      | `f2ba841a73c4aa9ffae472fc53213sasfffhe1a3` |
+| `DB_SERVER`       | PostgreSQL host           | Yes      | `autochess-db.postgres.database.azure.com` |
+| `DB_PORT`         | PostgreSQL port           | Yes      | `5432`                                     |
+| `DB_USERNAME`     | Database user             | Yes      | `dbuser`                                   |
+| `DB_PASSWORD`     | Database password         | Yes      | `postgres`                                 |
+| `DB_NAME`         | Service-specific database | Yes      | `auth-service`                             |
+| `REDIS_HOST`      | Redis host                | No       | `redis`                                    |
+| `REDIS_PORT`      | Redis port                | No       | `6379`                                     |
 
-**Secrets Management:** [Describe how secrets are stored - GitHub Secrets, Vault, etc.]
+
+**Secrets Management:**
+Secrets are stored in a .env file on the Azure VM and are not committed to version control.
+The file is created manually during deployment.
 
 ## How to Run Locally
 
 ### Prerequisites
 
-- [Node.js X.X+](https://nodejs.org/) / [Python X.X+](https://python.org/) / [etc.]
-- [Docker](https://docker.com/) (optional)
-- [Database] running locally or accessible
+Prerequisites
+
+- Java 21+
+- Maven
+- Docker & Docker Compose
+- PostgreSQL 
+- Redis 
 
 ### Setup Steps
 
 ```bash
-# 1. Clone repository
+
+# 1. Create an empty folder, inside it create 5 folders, each named like the services on github.
+mkdir autochess 
+cd autochess
+# 2.Clone each repo to each folder
 git clone [repository-url]
-cd [project-name]
+#3 Create the 6th folder, named deployement and clone this repo 
+git clone [repository-url]
+#4 Add an env file to the project inside the deployement folder with all the needed parameters
+cd deployement
+nano .env
+#5 Build and run the following command from the IDE for example, inside the deployement folder:
+docker compose up -d --build
 
-# 2. Install dependencies
-npm install          # or: pip install -r requirements.txt
-
-# 3. Set up environment variables
-cp .env.example .env
-# Edit .env with your values
-
-# 4. Set up database
-npm run db:migrate   # or: python manage.py migrate
-
-# 5. Seed database (optional)
-npm run db:seed      # or: python manage.py seed
-
-# 6. Start development server
-npm run dev          # or: python manage.py runserver
-```
-
-### Docker Setup (Alternative)
-
-```bash
-# Build and run with Docker Compose
-docker-compose up --build
-
-# Or run individual containers
-docker build -t [project-name] .
-docker run -p 3000:3000 [project-name]
+#6 All done, the services are running
 ```
 
 ### Verify Installation
 
 After starting the server:
 
-1. Open [http://localhost:3000](http://localhost:3000)
-2. You should see [expected behavior]
-3. Test API at [http://localhost:3000/api/health](http://localhost:3000/api/health)
+1. Open Swagger UI: [swagger](http://localhost:8081/swagger-ui.html)
+2. Check health: [health](http://localhost:8081/actuator/health) and [VM version](http://134.112.154.167:8081/actuator/health)
+3. Test authentication flow in swagger or Postman: Register → Login → Refresh token 
 
 ## Monitoring & Logging
 
-| Aspect | Tool | Dashboard URL |
-|--------|------|---------------|
-| **Application Logs** | [Logging solution] | [URL] |
-| **Error Tracking** | [Sentry/Rollbar] | [URL] |
-| **Performance** | [APM tool] | [URL] |
-| **Uptime** | [Uptime monitor] | [URL] |
+| Aspect                  | Tool                | Dashboard URL    |
+| ----------------------- | ------------------- | ---------------- |
+| **Application Logs**    | Docker logs         | Azure VM (SSH)   |
+| **Database Monitoring** | Azure Portal        | Azure PostgreSQL |
+| **Container Status**    | Docker Compose      | VM CLI           |
+| **Uptime**              | Manual              | http://<VM_PUBLIC_IP>:8081/actuator/health|
+
