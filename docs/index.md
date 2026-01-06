@@ -13,9 +13,9 @@
 
 | Resource | URL |
 |----------|-----|
-| Production | Deployed Application URL |
+| Production | http://134.112.154.167 |
 | Repository | https://github.com/orgs/diploma-sdc-2025/repositories |
-| API Docs | Swagger/OpenAPI URL |
+| API Docs | http://134.112.154.167:8081/swagger-ui.html  |
 | Design | https://www.figma.com/design/4Eq9PM6MOgPSc1SZfwbQDA/auto-chess-design?node-id=0-1&p=f&t=C2JDTlssiz9inlgN-0|
 
 ## Elevator Pitch

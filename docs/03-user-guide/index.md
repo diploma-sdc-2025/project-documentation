@@ -11,59 +11,58 @@ This section provides instructions for end users on how to use the application.
 
 ### System Requirements
 
-| Requirement | Minimum | Recommended |
-|-------------|---------|-------------|
-| **Browser** | [Chrome 90+, Firefox 88+, Safari 14+] | [Latest version] |
-| **Screen Resolution** | [1280x720] | [1920x1080] |
-| **Internet** | [Required/Optional] | - |
-| **Device** | [Desktop/Mobile/Both] | - |
+| Requirement  | Minimum                             | Recommended      |
+| ------------ | ----------------------------------- | ---------------- |
+| **Browser**  | Chrome 90+, Firefox 88+, Safari 14+ | Latest version   |
+| **Internet** | Required                            | Stable broadband |
+| **Device**   | Desktop / Laptop                    | Desktop          |
+| **Tools**    | Browser or API client (Postman)     | Swagger UI       |
+
 
 ### Accessing the Application
 
 1. Open your web browser
-2. Navigate to: **[Application URL]**
-3. [Additional access instructions if needed]
+2. Navigate to: **[\[Application URL\]](http://134.112.154.167)**
+3. Swagger url: http://134.112.154.167:8081/swagger-ui.html
 
-### First Launch
+### First Use (API Flow)
 
-#### Step 1: [Registration/Login]
+#### Step 1: User Registration
 
-[Screenshot placeholder: `![Login Screen](../assets/images/login.png)`]
+This can be executed directly via Swagger UI or Postman.
+1. Creates a new user account in the system
+2. Requires username, email, and password
 
-1. [Action 1]
-2. [Action 2]
-3. [Action 3]
+#### Step 2: User Login
 
-#### Step 2: [Initial Setup]
-
-[Screenshot placeholder: `![Setup Screen](../assets/images/setup.png)`]
-
-1. [Configure setting 1]
-2. [Configure setting 2]
-3. Click **[Button Name]** to continue
+1. POST /api/auth/login
+2. Authenticates the user
+3. Returns a JWT access token and refresh token
 
 #### Step 3: [Main Dashboard]
 
-[Screenshot placeholder: `![Dashboard](../assets/images/dashboard.png)`]
+After this, you would be on the main page of the app on frontend and using this access token can check other endpoints in other services
+- Copy the accessToken from the login response
+- In Swagger UI, click Authorize
+- Paste the token as: Bearer <accessToken>
+- Execute secured endpoints (game, matchmaking, battle, analytics)
 
-After setup, you will see the main dashboard with:
-- [Element 1]: [Description]
-- [Element 2]: [Description]
-- [Element 3]: [Description]
+
 
 ## Quick Start Guide
 
-| Task | How To |
-|------|--------|
-| [Common task 1] | [Brief instruction] |
-| [Common task 2] | [Brief instruction] |
-| [Common task 3] | [Brief instruction] |
-| [Common task 4] | [Brief instruction] |
+| Task                 | How To                              |
+| -------------------- | ----------------------------------- |
+| Register user        | `POST /api/auth/register`           |
+| Login                | `POST /api/auth/login`              |
+| Get JWT token        | Use login response                  |
+| Call protected API   | Use `Authorization: Bearer <token>` |
+| Check service health | `GET /actuator/health`              |
 
 ## User Roles
 
-| Role | Permissions | Access Level |
-|------|-------------|--------------|
-| **[Role 1]** | [What they can do] | [Full/Limited/Read-only] |
-| **[Role 2]** | [What they can do] | [Full/Limited/Read-only] |
-| **[Role 3]** | [What they can do] | [Full/Limited/Read-only] |
+| Role                   | Permissions                                  | Access Level |
+| ---------------------- | -------------------------------------------- | ------------ |
+| **Anonymous User**     | Register, login                              | Limited heavily |
+| **Authenticated User** | Access game, matchmaking, battle APIs        | Limited      |
+| **Administrator**      | Database & Analytics service management      | Full         |

@@ -4,90 +4,98 @@
 
 ### General
 
-**Q: [Common question 1]?**
+**Q: What type of application is this?**
 
-A: [Answer with clear explanation]
-
----
-
-**Q: [Common question 2]?**
-
-A: [Answer with clear explanation]
+A: This project is for now a backend-only microservice application. It exposes REST APIs documented via Swagger/OpenAPI and does not include a graphical frontend.
 
 ---
 
-**Q: [Common question 3]?**
+**Q: How do I interact with the application??**
 
-A: [Answer with clear explanation]
+A: Interaction is done through:
+- Swagger UI (browser-based)
+- API clients such as Postman
+
+---
+
+**Q: Where is the application hosted?**
+
+A: The application is deployed on a Microsoft Azure Ubuntu Virtual Machine and runs using Docker Compose.
 
 ---
 
 ### Account & Access
 
-**Q: [Account-related question]?**
+**Q: Do I need an account to use the APIs?**
 
-A: [Answer]
+A: Yes. Most endpoints require authentication. Users must first register and log in using the Auth Service to obtain a JWT token.
 
 ---
 
-**Q: [Access-related question]?**
+**Q: How do I authenticate API requests?**
 
-A: [Answer]
+A: 
+Include the following HTTP header in requests:
+- Authorization: Bearer <accessToken>
+Tokens are obtained from the /api/auth/login endpoint.
 
 ---
 
 ### Features
 
-**Q: [Feature-related question]?**
+**Q: Why do some endpoints return 401 Unauthorized?**
 
-A: [Answer]
+A: This usually means:
+- The JWT token is missing
+- The token has expired
+- The token was not included in the Authorization header
+Re-authenticate or refresh the token to resolve this.
 
+**Q: Are all services required to be running?**
+
+A: Yes. For full functionality:
+- All backend services must be running
+- Redis must be available
+- The PostgreSQL database must be accessible
 ---
 
 ## Troubleshooting
 
 ### Common Issues
 
-| Problem | Possible Cause | Solution |
-|---------|---------------|----------|
-| [Issue 1: e.g., "Page won't load"] | [Cause: e.g., "Cache issue"] | [Solution: e.g., "Clear browser cache"] |
-| [Issue 2: e.g., "Can't login"] | [Cause: e.g., "Wrong credentials"] | [Solution: e.g., "Reset password"] |
-| [Issue 3: e.g., "Data not saving"] | [Cause: e.g., "Network issue"] | [Solution: e.g., "Check connection"] |
-| [Issue 4] | [Cause] | [Solution] |
-| [Issue 5] | [Cause] | [Solution] |
+| Problem                      | Possible Cause                  | Solution                                    |
+| ---------------------------- | ------------------------------- | ------------------------------------------- |
+| Swagger UI does not load     | VM is stopped                   | Start the VM and run `docker compose up -d` |
+| API returns 401 Unauthorized | Missing or expired JWT          | Log in again and use a valid token          |
+| Cannot connect to API        | Containers not running          | Check with `docker compose ps`              |
+| Database connection error    | Azure DB firewall blocks access | Allow VM public IP in Azure PostgreSQL      |
+| Slow responses               | VM resource limits              | Restart services or reduce load             |
+
 
 ### Error Messages
 
-| Error Code/Message | Meaning | How to Fix |
-|-------------------|---------|------------|
-| `[ERROR_001]` | [What it means] | [Steps to resolve] |
-| `[ERROR_002]` | [What it means] | [Steps to resolve] |
-| "[Error message text]" | [What it means] | [Steps to resolve] |
+| Error Code / Message        | Meaning                  | How to Fix                  |
+| --------------------------- | ------------------------ | --------------------------- |
+| `401 Unauthorized`          | Authentication failed    | Login and provide valid JWT |
+| `403 Forbidden`             | Insufficient permissions | Ensure correct role/token   |
+| `500 Internal Server Error` | Server-side error        | Check logs                  |
+| `Connection refused`        | Service not running      | Restart containers          |
 
-### Browser-Specific Issues
-
-| Browser | Known Issue | Workaround |
-|---------|-------------|------------|
-| Chrome | [Issue if any] | [Workaround] |
-| Firefox | [Issue if any] | [Workaround] |
-| Safari | [Issue if any] | [Workaround] |
-| Edge | [Issue if any] | [Workaround] |
 
 ## Getting Help
 
 ### Self-Service Resources
 
-- [Documentation](../index.md)
-- [Video Tutorials]([URL])
-- [Community Forum]([URL])
+- [Project Documentation](../index.md)
+- API Documentation: [Swagger UI](http://134.112.154.167:8081/swagger-ui.html)
+- Source Code: [GitHub repositories](https://github.com/orgs/diploma-sdc-2025/repositories)
 
 ### Contact Support
 
-| Channel | Response Time | Best For |
-|---------|--------------|----------|
-| [Email] | [X hours/days] | [Type of issues] |
-| [Chat] | [X minutes] | [Type of issues] |
-| [Phone] | [Immediate] | [Type of issues] |
+| Channel              | Response Time | Best For               |
+| -------------------- | ------------- | ---------------------- |
+| Email                | ASAP          | Bugs & feature issues  |
+
 
 ### Reporting Bugs
 
@@ -99,4 +107,4 @@ When reporting a bug, please include:
 4. **Screenshots** - If applicable
 5. **Browser/Device info** - Browser name, version, OS
 
-Submit bug reports at: [Issue tracker URL or email]
+Submit bug reports at: [konstantin.kernazhytski@gmail.com]
