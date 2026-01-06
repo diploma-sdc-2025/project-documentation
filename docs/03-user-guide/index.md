@@ -22,7 +22,7 @@ This section provides instructions for end users on how to use the application.
 ### Accessing the Application
 
 1. Open your web browser
-2. Navigate to: **[\[Application URL\]](http://134.112.154.167)**
+2. Navigate to: **[Application URL: http://134.112.154.167/)](http://134.112.154.167)**
 3. Swagger url: http://134.112.154.167:8081/swagger-ui.html
 
 ### First Use (API Flow)
