@@ -51,7 +51,7 @@ High-frequency events (queue joins, board updates, battle events) are tracked in
 
 ### Project Structure
 
-[**Analytics-service structure**](../../assets/images/analytics-structure.png)
+![**Analytics-service structure**](../../assets/images/analytics-structure.png)
 
 ### Key Implementation Decisions
 

@@ -39,7 +39,7 @@ Redis is used to ensure fast matching and low latency.
 
 ### How to Use
 
-[Screenshot: `![Feature 2](../assets/images/feature-2.png)`]
+![Screenshot: `![Feature 2](../assets/images/feature-2.png)`]
 
 **Step 1:** Authenticate using the Auth Service
 

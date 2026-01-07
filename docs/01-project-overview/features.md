@@ -76,7 +76,7 @@ Production-like packaging and deployment.
 
 ## Use Case Diagram
 
-[Use Case Diagram](../assets/diagrams/use-case-diagram.png)
+![Use Case Diagram](../assets/diagrams/use-case-diagram.png)
 
 ## Non-Functional Requirements
 

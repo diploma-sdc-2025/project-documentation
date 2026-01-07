@@ -179,9 +179,9 @@ Each service is packaged and deployed independently as a Docker container.
 
 ### Diagrams
 
-[High level architecture](../../assets/diagrams/High-Level-Architecture.png)
+![High level architecture](../../assets/diagrams/High-Level-Architecture.png)
 
-[Use case diagram](../../assets/diagrams/use-case-diagram.png)
+![Use case diagram](../../assets/diagrams/use-case-diagram.png)
                         
 
 ## Requirements Checklist

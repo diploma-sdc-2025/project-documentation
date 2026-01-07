@@ -103,7 +103,7 @@ services:
 
 ### Diagrams
 
-[logical-architecture-diagram](../../assets/diagrams/logical-architecture-diagram.png)
+![logical-architecture-diagram](../../assets/diagrams/logical-architecture-diagram.png)
 
 ## Requirements Checklist
 

@@ -125,7 +125,7 @@ SecurityFilterChain securityFilterChain(
 
 ### Diagrams
 
-[API-Overview-Diagram](../../assets/diagrams/API-Overview-Diagram.png)
+![API-Overview-Diagram](../../assets/diagrams/API-Overview-Diagram.png)
 
 
 ## Requirements Checklist

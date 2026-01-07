@@ -58,7 +58,7 @@ Each microservice contains their own tests.
 
 ### Project Structure
 
-[test-structure](../../assets/screenshots/test-structure.png)
+![test-structure](../../assets/screenshots/test-structure.png)
 
 ### Key Implementation Decisions
 
