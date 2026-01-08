@@ -37,7 +37,7 @@ This section reflects on the project development process, lessons learned, and f
    - Impact: Delayed deployment
    - Resolution: Correct firewall rules and environment variable configuration
 
-2. **[Challenge 2]**
+2. **Docker compose problem**
    - Problem: Ensuring all services start and communicate correctly
    - Impact: Debugging startup and configuration which used a bit of time
    - Resolution: 1 docker compose file that builds all the services

@@ -99,10 +99,6 @@ High-frequency events (queue joins, board updates, battle events) are tracked in
     }
 ```
 
-### Diagrams
-
-[Link to relevant diagrams in assets/diagrams/ or include inline]
-
 ## Requirements Checklist
 
 | # | Requirement                  | Status | Evidence/Notes                          |
