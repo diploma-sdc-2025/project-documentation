@@ -6,9 +6,9 @@
 | ---- | ------------| ------- | ------ |
 | **E1: Authentication** | Register/login users, issue JWT tokens, protect endpoints | 2 | ✅ |
 | **E2: Matchmaking** | Queue players and create matches | 2 | ✅  |
-| **E3: Game Management & Shop** | Match state, shop offers, purchases, gold economy, board management, upgrades | 2 | ⚠️  |
-| **E4: Battle Simulation**  | Execute battles automatically and store results | 2 | ⚠️ |
-| **E5: Analytics & Monitoring** | Actuator + Micrometer metrics for gameplay and health  | 2 | ⚠️ |
+| **E3: Game Management & Shop** | Match state, shop offers, purchases, gold economy, board management, upgrades | 2 | ✅  |
+| **E4: Battle Simulation**  | Execute battles automatically and store results | 2 | ✅ |
+| **E5: Analytics & Monitoring** | Actuator + Micrometer metrics for gameplay and health  | 2 | ✅ |
 | **E6: UX Prototype (Figma)** | Wireframes | 1 | ✅  |
 | **E7: Cloud Deployment & Containerization** | Dockerize and deploy services to Azure | 2 | ✅ |
 
