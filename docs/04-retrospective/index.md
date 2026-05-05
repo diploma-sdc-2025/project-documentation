@@ -123,5 +123,3 @@ This section reflects on project execution, delivery outcomes, technical trade-o
 3. Small, consistent improvements in testing and documentation compound over time.
 
 ---
-
-*Retrospective updated: 2026-05-05*
