@@ -2,73 +2,48 @@
 
 ## Stack Overview
 
-| Layer | Technology | Version | Justification |
-| ----- | ---------- | ------- | ------------- |
-| **Frontend**| No implemented UI, Figma prototype| - | Scope focuses on backend architecture; UX is delivered via Figma wireframes and usability testing |
-| **UI Framework**| N/A | - | No front-end implementation in this diploma project |
-| **Backend** | Java | 21+| Modern LTS Java version; strong ecosystem for microservices and testing|
-| **Framework** | Spring Boot (microservices)| 3.x (or latest stable used) | Rapid REST development, strong security/testing tooling, production-ready patterns |
-| **Realtime**          | Spring WebSocket | latest stable | Enables server push updates (match/queue/battle events) |
-| **Database**          | PostgreSQL (database-per-service)| 17+ | Relational consistency, mature tooling, fits JPA well; supports clear service ownership |
-| **ORM** | Spring Data JPA (Hibernate)| bundled with Spring Boot    | Fast persistence layer development, entity mapping, repository pattern |
-| **Cache / In-memory** | Redis | latest stable | Fast state storage for in-memory board matrix and matchmaking queue state |
-| **Deployment** | Docker + Docker Compose + Azure App Service for Containers | - | Reproducible environments, simple local setup; Azure is required by diploma criteria |
-| **API Documentation** | Swagger / OpenAPI (springdoc)| latest stable | Required for clear endpoint documentation and demo via Swagger UI |
-| **Testing** | JUnit 5 + Mockito + JaCoCo | latest stable | Meets ≥70% coverage requirement; supports unit + integration style testing |
-| **CI/CD** | GitHub Actions (might be done) | - | Automates build/test and improves reliability                                     |
-
+| Layer | Technology | Version / notes | Justification |
+| ----- | ---------- | --------------- | ------------- |
+| **Client** | React + TypeScript + Vite | React 19, Vite 7 | SPA for matchmaking, shop/board, battle UI; `Vite` dev proxy for `/api/*` |
+| **Client tests** | Vitest + Testing Library | Vitest 3.x | Unit/UI tests aligned with Vite |
+| **Backend** | Java 21, Spring Boot | 3.5.x (BOM) | REST services, JPA, security, test support |
+| **Game sync** | HTTP (REST) + polling in client | — | Shop/match resync and matchmaking status; |
+| **Real-time (admin)** | Server-Sent Events (SSE) + Redis pub/sub | Spring `SseEmitter` | Live operator metrics; not the same as full-duplex WebSockets |
+| **Database** | PostgreSQL + Flyway | Azure-compatible JDBC | Migrations per service; `ddl-auto=none` |
+| **Cache / queue** | Redis | 6379 | Matchmaking queue; game/cache keys; analytics event channel |
+| **Battle engine** | Stockfish (UCI) | configurable depth | Objective evaluation in Battle Service |
+| **API contracts** | OpenAPI 3.1 YAML + springdoc (per service) | `api-docs/reference/openapi.yaml` | Unified reference + Swagger UI in development |
+| **Reverse proxy** | nginx | TLS 443 | SPA + `/api/*`; SSE-friendly buffering settings |
+| **Containers** | Docker (multi-stage Dockerfiles per service) | Eclipse Temurin 21 JRE | Reproducible JAR deployment |
+| **Coverage gate** | JaCoCo | plugin on `analytics-service` | `mvn verify` enforces ≥70% bundle instructions |
 
 ## Key Technology Decisions
 
-### Decision 1: Spring Boot Microservices + Database-per-Service
+### Multiple Spring Boot services + PostgreSQL
 
-**Context:** The project must demonstrate backend complexity, clean architecture, and multiple evaluation criteria (REST API, DB design, deployment, testing, analytics).
+**Decision:** Auth, Matchmaking, Game, Battle, Analytics as separate deployables, each with Flyway-managed schema where applicable.
 
-**Decision:** Implement the backend as multiple Spring Boot microservices (Auth, Matchmaking, Game, Battle, Analytics) with a separate PostgreSQL database per service.
+**Rationale:** Clear boundaries for the diploma; independent scaling/restart of battle vs auth.
 
-**Rationale:**
-- Clear separation of responsibilities and easier reasoning about each domain area
-- Matches real-world distributed systems patterns 
-- Supports independent containerization and deployment
+**Trade-off:** More integration work than a monolith; HTTP between services must stay consistent (timeouts, internal secrets).
 
-**Trade-offs:**
-- Pros: scalable architecture, clean separation, complex
-- Cons: harder to implement, unknown errors might occur
+### Redis for ephemeral state
 
-### Decision 2: Redis for Real-Time State (Game + Matchmaking)
+**Decision:** Redis for matchmaking queue and hot game keys; analytics ingestion channel (`analytics:events`) for fan-out to SSE.
 
-**Context:** Some data is short-lived and performance-sensitive (board matrix, game state, matchmaking queue).
+**Rationale:** Low latency; avoids over-writing Postgres on every tick.
 
-**Decision:** Use Redis namespaces to store:
-- game:* for game:board:{matchId} and game:state:{matchId}
-- queue:* for queue:active, queue:user:{userId}, queue:stats
+### REST-first client + SSE for admin analytics
 
-**Rationale:**
-- Very fast access for active match state and queue operations
-- Avoids constant relational writes for frequently changing in-memory state
-- Natural fit for queue structures (sorted sets) and ephemeral session data
+**Decision:** Player flows use **REST** (with intentional polling where push was not required); operators use **SSE** for live dashboards.
 
-**Trade-offs:**
-- Pros: performance, simpler real-time operations, reduces DB write load
-- Cons: harder to implement, need to sync with db
+**Rationale:** Simpler to deploy behind nginx than upgrading every route to WebSockets; SSE fits server→browser push.
 
 ## Development Tools
 
-| Tool | Purpose | Notes |
-|------|---------|-------|
-| **IDE** | VS Code, IntelliJ | VS Code for documentation; IntelliJ used for Spring Boot |
-| **Version Control** | Git + GitHub | All in one main branch (separated repos) |
-| **Build Tool** | Maven or Gradle | Consistent builds across services |
-| **Containerization** | Docker + Docker Compose | Local orchestration of services + dependencies|
-| **Testing** | JUnit 5 + Mockito + JaCoCo | Coverage target: ≥70% |
-| **API Testing** | Postman + Swagger UI | Swagger for documentation + quick manual testing; Postman for flows across services |
-| **Documentation** | Markdown + Swagger/OpenAPI | Markdown for docs; Swagger for endpoint docs |
-
-## External Services & APIs
-
-| Service | Purpose | Pricing Model |
-| --------| --------| --------------|
-| **Azure App Service for Containers** | Deploy and host the containerized microservices | Free tier / Student account |
-| **GitHub** | Source control + collaboration | Free tier   |
-| **Stockfish** | Chess analysis / move generation used by Battle Service | Free / open source |
-| **Figma** | UX wireframes and prototype | Free tier |
+| Tool | Purpose |
+|------|---------|
+| IntelliJ / VS Code | Backend / frontend |
+| Maven | Java builds |
+| npm | Frontend build |
+| Git + GitHub | Version control |

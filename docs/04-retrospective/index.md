@@ -1,129 +1,127 @@
 # 4. Retrospective
 
-This section reflects on the project development process, lessons learned, and future improvements.
+This section reflects on project execution, delivery outcomes, technical trade-offs, and the most important lessons learned.
 
-## What Went Well ✅
+## What Went Well
 
 ### Technical Successes
 
-- Successful implementation of a microservice architecture using Spring Boot
-- All services were containerized with Docker and managed using Docker Compose
-- Reliable integration with Azure Database for PostgreSQL and Redis
-- Swagger/OpenAPI documentation enabled easy testing and demonstration
-- GitHub Actions successfully validated builds and tests on every push
+- Implemented a working microservice architecture with clear service boundaries (auth, matchmaking, game, battle, analytics).
+- Delivered a usable web frontend on top of the API layer (guest and registered user flows).
+- Containerized services with Docker and coordinated local/VM startup through Docker Compose.
+- Integrated PostgreSQL, Redis, and OpenAPI-based API documentation.
+- Added realtime analytics support for admin monitoring (SSE; optional WebSocket paths explored).
 
 ### Process Successes
 
-- Clear separation of concerns between services improved maintainability
-- Manual deployment strategy reduced time usage 
+- Iterative delivery helped keep the project shippable at each milestone.
+- Service isolation improved debugging ownership and reduced accidental coupling.
+- Documentation quality improved over time, especially in technical criteria sections.
 
 ### Personal Achievements
 
-- Gained experience with cloud deployment on Azure
-- Learned to design, deploy, create and test a backend system
-- Learned more about docker and docker compose
-- First time worked with websockets
+- Gained practical Azure deployment and networking experience.
+- Improved confidence in microservice design and environment-based configuration.
+- Strengthened end-to-end ownership: implementation, testing, deployment, and documentation.
 
-## What Didn't Go As Planned ⚠️
+## What Did Not Go as Planned
 
-| Planned                 | Actual Outcome             | Cause                          | Impact |
-| ----------------------- | -------------------------- | ------------------------------ | ------ |
-| Frontend implementation | Backend-only delivery      | Focus on core backend features | Medium |
+| Planned | Actual Outcome | Cause | Impact |
+|---|---|---|---|
+| Early stable environment setup | Repeated environment/network adjustments | Azure firewall and env coordination complexity | Slower early iterations |
+| Smooth multi-service startup | Several startup/config mismatch cycles | Cross-service secrets/URLs and dependency ordering | Time spent on runtime debugging |
+| Uniform test depth across services | Test depth varied by service | Time constraints and feature pressure | Uneven confidence in edge cases |
 
-### Challenges Encountered
+### Main Challenges
 
-1. **Azure Networking & Firewall Configuration**
-   - Problem: Initial database connectivity issues
-   - Impact: Delayed deployment
-   - Resolution: Correct firewall rules and environment variable configuration
+1. **Cloud networking and DB access**
+   - Initial PostgreSQL connectivity and firewall issues delayed stable deployments.
+   - Resolved through consistent environment variable management and VM/IP rules.
 
-2. **Docker compose problem**
-   - Problem: Ensuring all services start and communicate correctly
-   - Impact: Debugging startup and configuration which used a bit of time
-   - Resolution: 1 docker compose file that builds all the services
+2. **Service-to-service configuration drift**
+   - JWT/internal secret mismatches and URL wiring caused intermittent failures.
+   - Resolved with shared env conventions and clearer deployment defaults.
+
+3. **Distributed troubleshooting overhead**
+   - Failures often surfaced in one service but originated in another.
+   - Mitigated through better logs and endpoint-by-endpoint validation.
 
 ## Technical Debt & Known Issues
 
-| ID     | Issue                  | Severity | Description                                         | Potential Fix                          |
-| ------ | ---------------------- | -------- | --------------------------------------------------- | -------------------------------------- |
-| TD-001 | Manual deployment      | Medium   | Containers must be started manually after VM reboot | Add startup scripts or systemd service |
-| TD-002 | Limited test coverage  | Low      | Some services lack full integration tests(the over 70% is covered though)| Add Testcontainers-based tests         |
-| TD-003 | No frontend            | Medium   | No UI / frontend to actually have the full working app | Create the front-end in Swift/kotlin |
-
-
-### Code Quality Issues
-
-- Some service-layer classes could be further refactored
-- Additional logs and error handling could be added
-- API documentation could have more explanation
+| ID | Issue | Severity | Description | Potential Fix |
+|---|---|---|---|---|
+| TD-001 | Manual deployment steps | Medium | VM restart/deploy still requires manual orchestration | Add startup automation and CI/CD rollout scripts |
+| TD-002 | Uneven test depth | Medium | Some services have weaker integration coverage | Expand Testcontainers/integration suites |
+| TD-003 | UI polish/accessibility backlog | Low-Medium | Core UX works, but polish and accessibility can be improved | Iterative UX passes and accessibility checklist |
 
 ## Future Improvements (Backlog)
 
-If there was more time, these features/improvements would be prioritized:
-
 ### High Priority
 
-1. **Automated Deployment**
-   - Description: Add CD pipeline for VM deployment
-   - Value: Faster and safer releases
-   - Effort: Medium
+1. **Deployment automation (CD)**
+   - Add repeatable VM deployment pipeline.
+   - Value: safer, faster releases with fewer manual steps.
+
+2. **Cross-service observability baseline**
+   - Standardize correlation IDs, structured logs, and basic dashboards.
+   - Value: faster incident triage across service boundaries.
 
 ### Medium Priority
 
-2. **Service Health Dashboard**
-   - Description: Unified health and metrics view
-   - Value: Improved observability
+3. **Deeper integration testing**
+   - Expand multi-service and failure-path tests.
+   - Value: stronger confidence during changes.
+
 
 ### Nice to Have
-3. Frontend UI for end users
 
+4.**UX refinement pass**
+   - Improve responsive details, accessibility, and micro-interactions.
 
 ## Lessons Learned
 
 ### Technical Lessons
 
-| Lesson                                 | Context               | Application                       |
-| -------------------------------------- | --------------------- | --------------------------------- |
-| Containerization simplifies deployment | Docker usage          | Use Docker in all future projects |
-| Cloud networking is critical           | Azure firewall issues | Plan networking early             |
+| Lesson | Context | Application |
+|---|---|---|
+| Service boundaries help long-term maintainability | Microservice split by domain | Keep ownership explicit and avoid shared DB shortcuts |
+| Environment consistency matters as much as code | Secrets, hostnames, ports, CORS | Use standardized env templates and validation checks |
+| Redis + PostgreSQL split works well for this domain | Hot state vs durable facts | Keep volatile/runtime state separate from persistent records |
 
 ### Process Lessons
 
-| Lesson                             | Context                     | Application                         |
-| ---------------------------------- | --------------------------- | ----------------------------------- |
-| Incremental development helps      | Microservices integration   | Deliver features iteratively        |
-
+| Lesson | Context | Application |
+|---|---|---|
+| Iterative delivery reduced risk | Scope evolved during development | Keep features deployable in small increments |
+| Documentation must evolve with implementation | Initial docs diverged from runtime behavior | Update docs in the same change set as code |
+| Early integration testing saves time later | Multi-service regressions were costly | Add integration checks earlier in each milestone |
 
 ### What Would Be Done Differently
 
-| Area       | Current Approach    | What Would Change    | Why                 |
-| ---------- | ------------------- | -------------------- | ------------------- |
-| Planning   | Feature-first       | Architecture-first   | Reduce refactoring  |
-| Technology | Docker Compose only | Add CD automation    | Improve efficiency  |
-| Process    | Manual testing      | More automated tests | Deacrease the possibility of error |
-| Scope      | Backend-only        | Thin frontend        | Improve usability   |
-
+| Area | Current Approach | Future Approach | Why |
+|---|---|---|---|
+| Planning | Feature-first execution | Milestone architecture checkpoints first | Reduce late refactoring |
+| Deployment | Manual compose-centric rollout | Automated CI/CD deployment steps | Improve reliability and speed |
+| Documentation | Updated mostly after feature work | Update docs together with implementation | Keep docs continuously accurate |
 
 ## Personal Growth
 
 ### Skills Developed
 
-| Skill                  | Before Project | After Project |
-| ---------------------- | -------------- | ------------- |
-| Docker & Containers    | A bit higher then beginner | Intermediate  |
-| Cloud Deployment       | Beginner       | Intermediate  |
-| Microservice Design    | Beginner       | Intermediate  |
-| CI with GitHub Actions | Beginner       | Intermediate  |
-| Websockets             | Beginner       | Intermediate  |
-
-
+| Skill | Before Project | After Project |
+|---|---|---|
+| Docker and Compose | Beginner+ | Intermediate |
+| Cloud deployment (Azure VM) | Beginner | Intermediate |
+| Microservice architecture | Beginner | Intermediate |
+| API-first integration and troubleshooting | Beginner | Intermediate |
+| Realtime patterns (SSE/WebSocket concepts) | Beginner | Intermediate |
 
 ### Key Takeaways
 
-1. Cloud deployment introduces real-world complexity
-2. Clear architecture decisions save time later
-3. Reliability and clarity matter more than over-engineering
+1. Real-world reliability depends on both code quality and deployment discipline.
+2. Clear boundaries and conventions reduce multi-service complexity.
+3. Small, consistent improvements in testing and documentation compound over time.
 
 ---
 
-*Retrospective completed: [2026-01-05]*
+*Retrospective updated: 2026-05-05*

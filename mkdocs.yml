@@ -1,6 +1,6 @@
-site_name: "[Project Name] - Diploma Documentation"
+site_name: "Auto-Chess — Diploma Documentation"
 site_description: "Diploma project documentation"
-site_author: "[Student Name]"
+site_author: "Konstantin Kernazhytski"
 
 theme:
   name: material
@@ -55,20 +55,21 @@ nav:
     - Architecture: 02-technical/index.md
     - Tech Stack: 02-technical/tech-stack.md
     - Deployment: 02-technical/deployment.md
-    # Add criterion files here as you create them:
-    # - Backend: 02-technical/criteria/backend.md
-    # - Frontend: 02-technical/criteria/frontend.md
+    - Criteria:
+      - Backend: 02-technical/criteria/backend.md
+      - Database: 02-technical/criteria/database.md
+      - UX: 02-technical/criteria/UX.md
+      - Containerization: 02-technical/criteria/Containerization.md
+      - Real-time Analytics: "02-technical/criteria/Real-time Analytics.md"
+      - API documentation: "02-technical/criteria/API documentation.md"
+      - Automated testing: "02-technical/criteria/Automated testing.md"
   - User Guide:
     - Getting Started: 03-user-guide/index.md
     - Features: 03-user-guide/features.md
     - FAQ: 03-user-guide/faq.md
   - Retrospective: 04-retrospective/index.md
-  - Appendices:
-    - Glossary: appendices/glossary.md
-    - API Reference: appendices/api-reference.md
-    - Database Schema: appendices/db-schema.md
 
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: "[GitHub Repository URL]"
+      link: "https://github.com/diploma-sdc-2025"

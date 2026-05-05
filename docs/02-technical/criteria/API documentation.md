@@ -4,122 +4,64 @@
 
 ### Status
 
-**Status:** Accepted 
+**Status:** Accepted  
 
-**Date:** [2026-01-05]
+**Date:** 2026-01-05 
 
 ### Context
 
-The project requires clear and complete API documentation so that system behavior and endpoints can be understood, tested, and evaluated without inspecting the source code.
-AutoChess Classic is built as an API-only backend consisting of multiple Spring Boot microservices. This introduces the following forces and constraints:
-- No traditional frontend exists; APIs are the primary interface
-- Each microservice exposes its own endpoints and responsibilities
-- Documentation must remain accurate as APIs evolve
-- The committee must be able to test the system easily
-- Manual documentation would be hard to maintain
+The project needs **stable HTTP contracts** so behaviour can be understood, graded, and integrated without reading every controller. The backend is split into **multiple Spring Boot services** (auth, matchmaking, game, battle, analytics), each exposing REST endpoints.
+
+Additional forces:
+
+- The **React SPA** (`front-end/`) is the **primary user-facing client**; APIs must match what the UI calls.
+- Documentation should stay aligned when endpoints change (prefer generation or a single maintained spec).
+
 
 ### Decision
 
-Swagger / OpenAPI (springdoc-openapi) is used to automatically generate and expose API documentation for each microservice.
-Every service provides:
-- A dedicated Swagger UI
-- Full endpoint descriptions
-- Request/response schemas
-- Validation rules
-Swagger is also used as the primary interaction tool for testing and demonstrating the system during development and defense.
+1. **Per service:** **springdoc-openapi** generates OpenAPI and **Swagger UI** in development (typical paths: `/swagger-ui.html` or `/swagger-ui/index.html` on each service port, e.g. 8081–8084, 8080 for analytics).
+2. **Repository contract:** a **unified** OpenAPI **3.1** file — `api-docs/reference/openapi.yaml` in the repo - describes the platform as a whole.
+3. **Annotations** on controllers and DTOs (`@Operation`, `@Schema`, validation annotations) feed springdoc; the YAML is the **submitted** reference for swagger endpoints.
+4. **Usage:** end users exercise the app in the **browser**; **Swagger/Postman** are for **development, debugging*
 
 ### Alternatives Considered
 
-| Alternative                   | Pros                    | Cons                         | Why Not Chosen               |
-| ----------------------------- | ----------------------- | -----------------------------| -----------------------------|
-| Manual Markdown documentation | Simple, no dependencies | Not testable                 | Not reliable for the project |
-| Postman only                  | Good for testing        | Not documenting, no schemas  | Insufficient for evaluation  |
-| Custom API documentation UI   | Great way to present    | Requires frontend            | Too much work, time limit    |
-
+| Alternative | Pros | Cons | Why not chosen |
+|-------------|------|------|------------------|
+| Manual Markdown only | No tooling | Drifts from code | Rejected as sole source |
+| Postman collections only | Fast manual tests | No single schema source in repo | Insufficient as only artefact |
+| **springdoc + unified YAML (chosen)** | UI per service + one PDF-friendly spec | Must keep YAML in sync when APIs change | Best fit for microservices + thesis |
+| One API Gateway OpenAPI only | Single entry | No gateway module in this repo | Not used |
 
 ### Consequences
 
-**Positive:**
-- Always up-to-date documentation generated from code
-- Clear contract between services and clients
-- Easy manual testing via browser
+**Positive:** Clear contracts; 
 
-**Negative:**
-- Swagger UI exposes many technical details, can be a mess, create difficulties 
+**Negative:** Two sources (springdoc per service + merged YAML) can drift if only one is updated after a change.
 
-**Neutral:**
-- Documentation is for the developer, not the end-user
+**Neutral:** Production may restrict or protect Swagger UIs; dev remains full access.
 
 ## Implementation Details
 
-### API Documentation Strategy
+### Strategy
 
-- Each microservice includes springdoc-openapi
-- Swagger UI is enabled per service (e.g. /swagger-ui.html)
-- Endpoints are documented using annotations:
-@Operation
-@ApiResponse
-@Schema
-- DTO validation annotations (@NotNull, @Size, etc.) are reflected automatically
+| Layer | What |
+|------|------|
+| **Unified spec** | `api-docs/reference/openapi.yaml` — `info`, `servers`, `tags`, `paths`, `components.schemas`, `bearerAuth` |
+| **Per service** | `springdoc-openapi-starter-webmvc-ui` in POM; controllers documented with OpenAPI 3 annotations |
+| **Client** | TypeScript clients under `front-end/src/api/` call the same path prefixes as in the spec (`/api/auth/...`, etc.) |
 
-### Key Implementation Decisions
+### Example (illustrative)
 
-| Decision                   | Rationale                           |
-| -------------------------- | ----------------------------------- |
-| Swagger/OpenAPI            | Industry standard, widely supported |
-| One Swagger UI per service | Matches microservice boundaries     |
-| Annotation-based docs      | Keeps documentation close to code   |
-| Swagger as test interface  | No frontend required                |
+Documented login endpoint and stateless security with Swagger paths permitted (exact `SecurityFilterChain` may vary by service — treat as a pattern, not a copy-paste for every module).
 
-
-### Code Examples
-The following snippet: 
-- Authenticates a user using email and password credentials.
-- Returns JWT access and refresh tokens upon successful authentication.
-- The endpoint is automatically documented using Swagger/OpenAPI annotations.
-
-```Java
-    @Operation(summary = "User login",
-            description = "Authenticates a user and returns JWT tokens.")
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest req) {
-        return ResponseEntity.ok(auth.login(req));
-    }
-```
-
-
-Next snippet is the security configuration that is used across all backend services.
-
-It enforces stateless JWT-based authentication and allows access to Swagger/OpenAPI and Actuator endpoints.
-
-``` Java
-@Bean
-SecurityFilterChain securityFilterChain(
-        HttpSecurity http,
-        JwtAuthenticationFilter jwtAuthenticationFilter
-) throws Exception {
-
-    http
-        .csrf(csrf -> csrf.disable())
-        .sessionManagement(sm ->
-            sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        )
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers(
-                "/api/auth/**",
-                "/actuator/**",
-                "/v3/api-docs/**",
-                "/swagger-ui/**",
-                "/swagger-ui.html"
-            ).permitAll()
-            .anyRequest().authenticated()
-        )
-        .addFilterBefore(
-            jwtAuthenticationFilter,
-            UsernamePasswordAuthenticationFilter.class
-        );
-
-    return http.build();
+```java
+@Operation(summary = "User login",
+        description = "Authenticates a user and returns JWT tokens.")
+@PostMapping("/login")
+public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest req) {
+    return ResponseEntity.ok(auth.login(req));
 }
 ```
 
@@ -127,32 +69,27 @@ SecurityFilterChain securityFilterChain(
 
 ![API-Overview-Diagram](../../assets/diagrams/API-Overview-Diagram.png)
 
-
 ## Requirements Checklist
 
-| # | Requirement                      | Status | Evidence/Notes                        |
-| - | -------------------------------- | ------ | ------------------------------------- |
-| 1 | API endpoints documented         | ✅      | Swagger UI available for all services |
-| 2 | Request/response schemas defined | ✅      | DTOs reflected in OpenAPI specs       |
-| 3 | Authentication documented        | ✅      | JWT requirements visible in Swagger   |
-| 4 | Interactive API testing          | ✅      | Endpoints callable via Swagger UI     |
+| # | Requirement | Status | Evidence |
+|---|----------------|--------|----------|
+| 1 | Endpoints and operations described | ✅  | `openapi.yaml` + springdoc on services |
+| 2 | Request/response schemas | ✅  | `components.schemas` in YAML; DTOs in code |
+| 3 | Security scheme (JWT) documented | ✅ | `bearerAuth` in unified spec |
+| 4 | Discoverable for evaluation | ✅ | File in repo; optional Swagger UI per running service |
 
 
-**Legend:**
-- ✅ Fully implemented
-- ⚠️ Partially implemented
-- ❌ Not implemented
+**Legend:** ✅ done · ⚠️ verify after changes · ❌ missing
 
-## Known Limitations
+## Known limitations
 
-| Limitation              | Impact                     | Potential Solution       |
-| ----------------------- | -------------------------- | ------------------------ |
-| Public Swagger exposure | Potential security risk    | Restrict in production   |
-| No front-end            | Not testable on UI         | Add front-end            |
-
+| Topic | Note |
+|--------|------|
+| **Swagger in production** | May be disabled or IP-restricted; not required to be public on the internet. |
+| **Spec drift** | After changing a controller, update the unified `openapi.yaml` (or your export process) so the thesis stays accurate. |
 
 ## References
 
-- Swagger / OpenAPI Documentation: (https://swagger.io/docs/)
-- Springdoc OpenAPI: (https://springdoc.org/)
-- Spring Boot REST Documentation: (https://docs.spring.io/spring-boot/docs/current/reference/html/web.html)
+- [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
+- [springdoc-openapi](https://springdoc.org/)
+- [Swagger](https://swagger.io/docs/)

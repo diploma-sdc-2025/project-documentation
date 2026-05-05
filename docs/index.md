@@ -1,47 +1,49 @@
-# Auto-chess
+# Auto-Chess
 
 ## Project Information
 
 | Field | Value |
 |-------|-------|
-| Student: | [Konstantin Kernazhytski] |
-| **Group** | [Java] |
-| **Supervisor** | [Pavlo Andriiash] |
-| **Date** | [2026-01-07] |
+| Student | Konstantin Kernazhytski |
+| **Group** | Java |
+| **Supervisor** | Pavlo Andriiash |
+| **Date** | 2026-01-07 |
 
 ## Links
 
 | Resource | URL |
 |----------|-----|
-| Production | http://134.112.154.167 |
-| Repository | https://github.com/orgs/diploma-sdc-2025/repositories |
-| API Docs | http://134.112.154.167:8081/swagger-ui.html  |
-| Design | https://www.figma.com/design/4Eq9PM6MOgPSc1SZfwbQDA/auto-chess-design?node-id=0-1&p=f&t=C2JDTlssiz9inlgN-0|
+| Production (HTTPS) | https://kon-autochess.francecentral.cloudapp.azure.com |
+| Repository |  https://github.com/orgs/diploma-sdc-2025/repositories |
+| API specification | Unified OpenAPI: `api-docs/reference/openapi.yaml` in the project repo  Per-service Swagger UI may exist on each port in development. |
+| Design | https://www.figma.com/design/4Eq9PM6MOgPSc1SZfwbQDA/auto-chess-design |
 
 ## Elevator Pitch
 
-AutoChess Classic is a strategy game that reimagines traditional chess as an auto-battler, where players focus on planning, piece combinations, and positioning while battles resolve automatically. It is designed for both casual strategy players who want quick, accessible matches and chess enthusiasts looking for a fresh take on familiar mechanics. The game addresses the problem of long, complex chess matches by offering short sessions that still preserve strategic depth. What makes AutoChess Classic unique is its combination of classic chess pieces with roguelike progression and data-driven balancing, ensuring high replayability and evolving gameplay. Matches typically last under 10 minutes, making the game well suited for modern, time-constrained players.
+AutoChess Classic is a strategy game that reimagines traditional chess as an auto-battler: players plan economy and positioning while battles resolve automatically. It targets casual and chess-aware players who want shorter sessions than classical chess. The implementation includes a **React** web client and **Spring Boot** services for auth, matchmaking, game state, battle evaluation (Stockfish), and analytics.
 
 ## Evaluation Criteria Checklist
 
-| # | Criterion | Status | Documentation |
-|---|-----------|--------|---------------|
-| 1 | Back-end | ✅/⚠️ | Link to criteria/criterion-1.md |
-| 2 | Well-designed UX | ✅/⚠️ | Link to criteria/criterion-2.md |
-| 3 | Database | ✅/⚠️ | Link to criteria/criterion-3.md |
-| 4 | Real-time Analytics | ✅/⚠️| Link to criteria/criterion-4.md |
-| 5 | Containerization | ✅ | Link to criteria/criterion-5.md |
-| 6 | API documentation | ✅/⚠️/❌ | Link to criteria/criterion-6.md |
-| 7 | Automated tests ≥ 70% coverage | ✅ | Link to criteria/criterion-7.md |
+Documentation files live under `docs/02-technical/criteria/` (filenames match below).
+
+| # | Criterion | Documentation |
+|---|-----------|----------------|
+| 1 | Backend | [backend.md](02-technical/criteria/backend.md) |
+| 2 | UX | [UX.md](02-technical/criteria/UX.md) |
+| 3 | Database | [database.md](02-technical/criteria/database.md) |
+| 4 | Real-time Analytics | [Real-time Analytics.md](02-technical/criteria/Real-time%20Analytics.md) |
+| 5 | Containerization | [Containerization.md](02-technical/criteria/Containerization.md) |
+| 6 | API documentation | [API documentation.md](02-technical/criteria/API%20documentation.md) |
+| 7 | Automated testing | [Automated testing.md](02-technical/criteria/Automated%20testing.md) |
 
 ## Documentation Navigation
 
-- [Project Overview](01-project-overview/index.md) - Business context, goals, and requirements
-- [Technical Implementation](02-technical/index.md) - Architecture, tech stack, and criteria details
-- [User Guide](03-user-guide/index.md) - How to use the application
-- [Retrospective](04-retrospective/index.md) - Lessons learned and future improvements
+- [Project Overview](01-project-overview/index.md) — Business context, goals, and requirements
+- [Technical Implementation](02-technical/index.md) — Architecture, tech stack, and criteria
+- [User Guide](03-user-guide/index.md) — How to use the application
+- [Retrospective](04-retrospective/index.md) — Lessons learned and future improvements
 
 ---
 
-*Document created: [01.02.2026]*
-*Last updated: [01.02.2026]*
+*Document created: 01.02.2026*  
+*Last updated: 04.05.2026*

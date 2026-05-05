@@ -6,7 +6,7 @@
 
 **Status:** Accepted 
 
-**Date:** 2026-01-03
+**Date:** 2026-05-01
 
 ### Context
 
@@ -19,26 +19,7 @@ UX is delivered as a mobile-first Figma wireframe + interactive prototype, cover
 - Main menu page
 - Game page
 
-
-### Alternatives Considered
-
-| Alternative | Pros | Cons | Why Not Chosen |
-| ------------| -----| -----| -------------- |
-| Full implemented front-end (Swift/Kotlin) | Real clickable UI connected to backend; best realism | Too time-consuming; | Scope focuses on backend + database; UX criterion satisfied with a prototype
-| Minimal HTML UI | Faster to make than React; simple demo | Still takes significant time; limited design quality | Would reduce time for backend/testing/deployment |                                           |
-
-### Consequences
-
-**Positive:**
-- UX criteria achieved
-- Figma prototype shows how the user interacts and shows the full flow
-
-**Negative:**
-- Prototype is not connected to live backend, so some interactions are conceptual
-- No real frontend
-
-**Neutral:**
-- Swagger/Postman remains the primary way to interact with the system
+                                         
 
 ## Implementation Details
 

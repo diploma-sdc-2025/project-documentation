@@ -1,128 +1,133 @@
 # Feature Walkthrough
 
-## Feature 1: User Authentication & Authorization
+## Feature 1: Authentication & Account Modes
 
 ### Overview
 
-This feature provides secure user authentication using JSON Web Tokens (JWT).
-It allows users to register, log in, refresh tokens, and log out securely across all backend services.
+AutoChess Classic supports both **guest sessions** and **registered accounts**:
+
+- **Guest mode** for quick entry and immediate play
+- **Registered account** for persistent profile progress, statistics, and ranking history
 
 ### How to Use
 
-**Step 1:** Register a user
-- Endpoint: POST /api/auth/register
-- Provide user credentials (username, email, password)
+1. Open the application home page.
+2. Choose one path:
+   - **Play as guest**
+   - **Create account**
+   - **Log in**
+3. If registering/logging in, complete credentials and continue to the main menu.
 
-**Step 2:** Log in
-- Endpoint: POST /api/auth/login
-- Receive an access token and refresh token
+### Expected Result
 
-**Step 3:** Authorize requests
-- add as header (e.g in postman) : Authorization: Bearer <accessToken>
-
-**Expected Result:** 
-The user is authenticated and can access protected endpoints in other services.
-
-### Tips
-
-- Tokens expire; use the refresh endpoint when needed
-- Swagger UI provides built-in authorization support
+- Guest users can play immediately.
+- Registered users can keep long-term progress and profile stats.
 
 ---
 
-## Feature 2: Matchmaking System
+## Feature 2: Matchmaking
 
 ### Overview
 
-The matchmaking service pairs players together if in queue.
-Redis is used to ensure fast matching and low latency.
+The matchmaking flow pairs players using the queue service. The UI handles search state and mode selection.
 
 ### How to Use
 
-![Screenshot: `![Feature 2](../assets/images/feature-2.png)`]
+1. From the main menu, click **Play**.
+2. Choose an available mode in the mode picker.
+3. Click **Play** in the picker to join queue.
+4. Wait for assignment to a match.
 
-**Step 1:** Authenticate using the Auth Service
+### Expected Result
 
-**Step 2:** Send a queue join request
-- Endpoint: POST /api/matchmaking/join
-- Requires valid JWT token
+- User is queued and receives match assignment when an opponent is available.
 
-**Step 3:** : Retrieve match result
-- Endpoint: GET /api/matchmaking/status
+### Notes
 
-**Expected Result:** 
-The user is matched with another player and assigned to a game session.
----
-
-## Feature 3: Game State Management
-
-### Overview
-
-The game service manages game sessions, player resources, and match state persistence.
-
-### How to Use
-
-**Step 1:** Authenticate and obtain JWT
-
-**Step 2:** Create or join a game session
-- Endpoint: POST /api/game/create-match
-
-**Step 3:** Query game state
-- Endpoint: GET /api/game/matches/{matchId}/state
-
-
-**Expected Result:** 
-
-Game state is stored and retrievable from the database.
+- Queue speed depends on active players and service health.
+- Matchmaking uses Redis-backed queue state for fast updates.
 
 ---
 
-## Feature 4: Battle Simulation 
+## Feature 3: Profile & Statistics
 
 ### Overview
 
-The battle service handles combat logic between players and determines battle outcomes.
+Profile visibility differs by account type.
+
+- **Guest:** limited profile view and account creation prompt
+- **Registered:** persistent stats and rating-related profile data
 
 ### How to Use
 
-**Step 1:** Authenticate
+1. Open **Profile** from the main menu.
+2. Check available details based on your account type.
+3. If currently guest and you want progression, use **Create free account**.
 
-**Step 2:** Create or join a game session
-- Endpoint: POST /api/game/create-match
+### Expected Result
 
-**Step 3:** Trigger battle execution
-- Endpoint: POST /api/battle/simulate
-
-**Expected Result:** 
-Battle results are calculated and health and etc are changed
-
-
-
-## Feature 5: Battle Simulation 
-
-### Overview
-
-The analytics service collects gameplay events and provides aggregated statistics.
-It supports both REST and WebSocket communication.
-
-### How to Use
-
-**Step 1:** Authenticate with the admin login and password
-
-**Step 2:** Retrieve analytics data
-- Endpoint: GET /api/analytics/live
-
-**Expected Result:** 
-Aggregated statistics and insights are returned. (an html page with a dashboard is possible)
+- Guests see a simplified profile.
+- Registered users see persistent tracked values.
 
 ---
 
-## Feature Comparison
+## Feature 4: Game State & Match Flow
 
-| Feature                | Available |
-| ---------------------- | --------- |
-| User Authentication    | ✅         |
-| Matchmaking            | ✅         |
-| Game State Management  | ✅         |
-| Battle Simulation      | ✅         |
-| Analytics & Statistics | ✅         |
+### Overview
+
+Game service manages match lifecycle and player state (economy, board/inventory, rounds). Battle results update match progression.
+
+### How to Use
+
+1. Enter a match through matchmaking.
+2. Use game UI actions during available phases.
+3. Progress through rounds until match completion.
+
+### Expected Result
+
+- Match state is updated consistently and can be resumed/refreshed through service-backed state.
+
+---
+
+## Feature 5: Analytics & Leaderboard
+
+### Overview
+
+Analytics service aggregates gameplay events and exposes leaderboard/statistics APIs. Admin-focused live streams are available for operational visibility.
+
+### How to Use
+
+1. Open leaderboard/statistics sections (for eligible users).
+2. For API-level analytics, call analytics endpoints through Swagger or Postman.
+
+### Expected Result
+
+- Aggregated statistics and ranking-related data are returned.
+
+---
+
+## Optional API Quick References
+
+For API testing (Swagger/Postman):
+
+- Register: `POST /api/auth/register`
+- Login: `POST /api/auth/login`
+- Queue join: `POST /api/matchmaking/join`
+- Queue status: `GET /api/matchmaking/status`
+
+Use protected endpoints with:
+
+- `Authorization: Bearer <accessToken>`
+
+---
+
+## Feature Availability
+
+| Feature | Available |
+|---------|-----------|
+| Guest mode | Yes |
+| Account registration/login | Yes |
+| Matchmaking | Yes |
+| Match gameplay state | Yes |
+| Profile & tracked stats | Yes (registered), limited for guest |
+| Analytics & leaderboard | Yes |

@@ -1,65 +1,47 @@
 # Project Scope
 
-## In Scope ✅
+## In Scope
 
-| Feature| Description| Priority |
-| -------| -----------| -------- |
-| User Authentication | User registration, login, JWT-based authentication and authorization | **Must** |
-| Matchmaking System | Queue management and pairing players into matches | **Must** |
-| Core Game Logic| Match state management, shop mechanics, gold economy, piece placement| **Must** |
-| Automated Battle System | Server-side battle execution and result calculation | **Must** |
-| Microservices Architecture | Separation into Auth, Game, Battle, Matchmaking, and Analytics services | **Must** |
-| Database per Service | Independent PostgreSQL database for each microservice | **Must**   |
-| API Documentation | Swagger/OpenAPI documentation for all services | **Must** |
-| Containerization | Dockerized services with Docker Compose for local development | **Must** |
-| Cloud Deployment | Deployment of containers to Azure App Service | **Must** |
-| Analytics & Monitoring | Spring Boot Actuator and Micrometer metrics | **Must** |
-| UX Design (Prototype)  | Figma wireframes | **Must** |
+| Feature | Description | Priority |
+| ------- | ----------- | -------- |
+| **Web client** | React SPA: auth, matchmaking, shop/board, battle flow, tutorial route | **Must** |
+| User authentication | Register, login, guest where implemented; JWT | **Must** |
+| Matchmaking | Queue and pairing into matches | **Must** |
+| Core game logic | Shop, economy, placement, king, automated battles | **Must** |
+| Multiple Spring Boot services | Auth, Matchmaking, Game, Battle, Analytics | **Must** |
+| Persistence | PostgreSQL + Flyway per service patterns | **Must** |
+| Redis | Queue + caches + analytics event bus | **Must** |
+| API documentation | OpenAPI + Swagger/springdoc | **Must** |
+| Containerization | Dockerfiles per service | **Must** |
+| Cloud demo | **Azure VM** (typical): nginx, HTTPS, services — *document your actual topology* | **Must** |
+| Analytics | Events, leaderboard, **live admin SSE**; optional Actuator health per service | **Must** |
+| UX | Implemented UI + Figma reference | **Must** |
 
+## Out of Scope
 
-## Out of Scope ❌
+| Feature | Reason |
+| -------- | ------ |
+| Native mobile apps | Web-first diploma scope |
+| Full tournament / esports systems | Beyond time box |
+| Social graph, chat, monetisation | Not required academically |
+| Heavy ML analytics | Optional future |
 
-| Feature | Reason | When Possible |
-| --------| -------| ------------- |
-| Front-End Application(Swift/ Kotlin) | Focus is backend architecture and UX design only | After diploma defense |
-| Ranked / Competitive Mode (ELO/MMR) | Requires advanced balancing and long-term data | After publishing to store |
-| AI Single-Player Mode | Adds significant complexity to game logic | One of the future updates (when in store)|
-| Social Features (Chat, Friends)     | Not required for academic goals | Future update|
-| Monetization / Payments | Not relevant for diploma objectives  | Future update |
-| Advanced Analytics / ML | Beyond required analytics scope | Future update |
+## Assumptions & Constraints
 
+### Assumptions
 
-## Assumptions
+| # | Assumption |
+|---|--------------|
+| A1 | Players use a **modern browser** and stable internet; no unsupported legacy browsers. |
+| A2 | **PostgreSQL** and **Redis** are reachable from all services that need them (same VPC/network or configured firewall). |
+| A3 | **JWT signing secret** and DB credentials are provided via environment/config — same secret wherever tokens are validated. |
+| A4 | **Stockfish** (or equivalent) is available to **Battle Service** in each runtime you deploy. |
+| A5 | Demo traffic is **low** (committee, testers); no global-scale load or HA cluster is implied. |
 
-| # | Assumption | Impact if Wrong | Probability |
-| - | -----------| ----------------| ----------- |
-| 1 | Users are familiar with basic chess rules | UX may require more onboarding | Medium |
-| 2 | Azure free/student tier is sufficient for demo deployment | Deployment issues or service limits | Medium |
-| 3 | Simplified auto-battle rules provide engaging gameplay | Game may feel shallow | Medium|
+### Constraints
 
-## Constraints
-
-Limitations that affect the project:
-
-| Constraint Type | Description | Mitigation |
-| --------------- | ----------- | ---------- |
-| **Time** | Fixed diploma deadline (10–12 weeks)| Strict scope control, prioritizing Must-have features |
-| **Budget** | €0 budget; free tiers only | Use open-source tools and Azure free/student plan     |
-| **Technology** | Mandatory use of Spring Boot, PostgreSQL, Docker, Azure | Early architecture decisions and tutorials |
-| **Resources** | Solo developer | Simplified feature set, realistic planning |
-| **Knowledge** | Limited prior experience with game logic and cloud deployment | Learning time |
-| **Infrastructure** | Single-region deployment, no high availability requirement | Designed for demo-scale usage |
-
-
-## Dependencies
-
-| Dependency        | Type      | Owner                | Status |
-| ----------------- | --------- | -------------------- | ------ |
-| GitHub Repository | External  | GitHub               | ✅ |
-| Azure App Service | External  | Microsoft Azure      | ✅ |
-| PostgreSQL        | Technical | PostgreSQL Community | ✅ |
-| Spring Boot       | Technical | Spring / VMware      | ✅ |
-| Docker            | Technical | Docker Inc.          | ✅ |
-| Swagger / OpenAPI | Technical | OpenAPI Initiative   | ✅ |
-| Figma             | External  | Figma Inc.           | ✅ |
-| Stockfish     	| Technical | Open source          | ✅ |
+| # | Constraint | Impact |
+|---|------------|--------|
+| C1 | **Single developer / thesis deadline** | Scope must stay cut to demonstrable vertical slices. |
+| C2 | **One main demo environment** (e.g. one Azure VM + domain) | No multi-region failover or 24/7 SLO. |
+| C3 | **Budget** | Free/student tiers and open-source tools where possible. |

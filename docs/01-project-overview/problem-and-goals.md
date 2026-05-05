@@ -2,8 +2,8 @@
 
 ## Context
 
-AutoChess Classic is a diploma project that reimagines traditional chess as a short-session strategy auto-battler. Instead of manual move-by-move play, the player focuses on drafting pieces, managing economy, positioning on an 8×8 board, and upgrading units, while battles execute automatically.
-The system is implemented as a Spring Boot microservices backend (Auth, Game, Battle, Matchmaking), each with its own PostgreSQL database, containerized with Docker, deployed to Azure, documented via Swagger, monitored using Spring Boot Actuator + Micrometer metrics, and validated by automated tests with ≥70% coverage. UX is delivered as Figma wireframes(no full front-end implementation).
+AutoChess Classic is a diploma project that reimagines traditional chess as a short-session strategy auto-battler. Instead of manual move-by-move play, the player focuses on drafting pieces, managing economy, and positioning on an 8×8 board, while battles execute automatically.
+The system is implemented as **Spring Boot** services (Auth, Matchmaking, Game, Battle, **Analytics**), with **PostgreSQL** and **Flyway**, **Redis** for queue/cache, a **React + TypeScript** web client, **OpenAPI** documentation, **admin real-time metrics (SSE)**, and **automated tests** (including a **≥70%** JaCoCo gate on `analytics-service`). **Figma** supports UX;
 
 ## Problem Statement
 
@@ -14,7 +14,7 @@ The system is implemented as a Spring Boot microservices backend (Auth, Game, Ba
 
 **What:** Traditional chess has barriers for casual engagement (high skill floor, long matches, punishing mistakes, low variety), while popular auto-battlers lack the universally understood mechanics and units of chess. There is no clear bridge between these audiences.
 
-**Why:** This limits chess accessibility for casual/mobile play and leaves a market gap for a strategy game that is both familiar and replayable. For the diploma, it also provides a suitable domain to demonstrate backend architecture skills, persistence, deployment, analytics, documentation, and testing.
+**Why:** This limits chess accessibility for casual play and leaves a market gap for a strategy game that is both familiar and replayable. For the diploma, it also provides a suitable domain to demonstrate backend architecture skills, persistence, deployment, analytics, documentation, and testing.
 
 ### Pain Points
 
@@ -30,9 +30,9 @@ The system is implemented as a Spring Boot microservices backend (Auth, Game, Ba
 
 | Goal | Description | Success Indicator |
 |------|-------------|-------------------|
-| Academic achievement | Demonstrate required diploma complexity (backend, UX, DB, analytics, Docker, API docs, testing) | All criteria demonstrated in documentation + successful defense |
+| Academic achievement | Demonstrate required diploma complexity (backend, UX, DB, analytics, Docker, API docs, testing) | All criteria demonstrated in documentation |
 | Technical excellence | Implement a clean microservices REST backend with game logic and core services | Working multi-service system with stable endpoints |
-| Functional completeness | Deliver a playable multiplayer flow via APIs (auth → matchmaking → shop/board → battle → results) | End-to-end scenario demonstrable through Swagger/Postman |
+| Functional completeness | Deliver a playable multiplayer flow (auth → matchmaking → shop/board → battle → results), including the web UI | End-to-end scenario demonstrable in the browser and via APIs |
 
 ## Objectives & Metrics
 
@@ -40,9 +40,9 @@ The system is implemented as a Spring Boot microservices backend (Auth, Game, Ba
 |-----------|--------|---------------|--------------|----------|
 | Provide fully functional and working backend behavior | End-to-end flow works + API response time | All Done | <500ms average for main game actions | Before defense |
 | Meet diploma testing requirements | Automated test coverage | All done | ≥70% line coverage (JaCoCo) | Before defense |
-| Ensure containerized deployment | Services running as Docker containers in cloud | Not deployed | 5 services deployed on Azure App Service for Containers | Before defense |
-| Provide complete API documentation | Swagger coverage | All done | 100% endpoint documentation (5 Swagger UIs) | Before defense |
-| Deliver analytics/monitoring | Actuator + custom gameplay metrics | Partially done | ≥5 gameplay metrics exposed as JSON across services | Before defense |
+| Ensure containerized deployment | Dockerfiles + runnable stack on **Azure VM** (nginx, HTTPS, services) | In progress / demo-ready | Stable demo URL + reproducible runbook | Before defense |
+| Provide complete API documentation | OpenAPI + Swagger where enabled | Unified YAML in repo + per-service springdoc in dev | Same contracts referenced by SPA | Before defense |
+| Deliver analytics | Gameplay events, leaderboard, **live admin stream (SSE)** + Actuator health | Implemented | Metrics visible in analytics service + optional actuator health per service | Before defense |
 
 ## Success Criteria
 
@@ -50,11 +50,11 @@ The system is implemented as a Spring Boot microservices backend (Auth, Game, Ba
 
 - [Done] Authentication works end-to-end: users can register/login, receive JWT, and access protected endpoints
 - [Done] Matchmaking works: authenticated players can join queue and matches are created successfully.
-- [Partially Done] Core game loop works via APIs: shop offers pieces, purchase consumes gold, board placement is persisted and match state is retrievable.
-- [Partially Done] Battle execution works: Game Service triggers Battle Service, battle result stored and returned, win/loss recorded.
+- [Done] Core game loop works via APIs: shop offers pieces, purchase consumes gold, board placement is persisted and match state is retrievable.
+- [Done] Battle execution works: Game Service triggers Battle Service, battle result stored and returned, win/loss recorded.
 - [Done] Microservices architecture demonstrated: 5 Spring Boot services, REST communication, database-per-service.
 - [Done] Containerization + cloud deployment: all services Dockerized and deployed to Azure.
-- [Done] Documentation + testing compliance: Swagger docs for all services + ≥70% test coverage with report.
+- [Done] Documentation + testing compliance: OpenAPI/Swagger + ≥70% JaCoCo gate where configured (`analytics-service`).
 
 ### Nice to Have
 
@@ -63,10 +63,12 @@ The system is implemented as a Spring Boot microservices backend (Auth, Game, Ba
 
 ## Non-Goals
 
-What this project explicitly does NOT aim to achieve:
+What this project explicitly does **not** aim to achieve (beyond the diploma scope):
 
-- Full web/mobile front-end implementation (React/Angular/Vue/native apps)
-- Ranked mode, ELO/MMR, leaderboards, tournaments
-- Social features (friends list, chat), cosmetics, monetization, progression systems
-- Advanced analytics (ML/predictive modeling), alerting systems
-- AI single-player opponent, spectator mode, replays
+- Native **mobile apps** (iOS/Android) — web-first only
+- Full **tournament** infrastructure, seasons, or commercial **matchmaking** at scale
+- **Social** layer (friends list, in-game chat), cosmetics shop, monetisation
+- **ML**/predictive analytics pipelines or full **observability** stacks (Datadog-class)
+- **Spectator mode**, full **replay** export, or **AI opponent** as a product pillar
+
+*Note: **Ratings** and a **leaderboard** exist so the game feels rewarding

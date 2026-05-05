@@ -43,7 +43,7 @@
 | Environment     | URL                              | Branch      |
 | --------------- | -------------------------------- | ----------- |
 | **Development** | `http://localhost:8080-8084`     | `feature/*` |
-| **Production**  | `http://<VM_PUBLIC_IP>:8080-8084`| `main`      |
+| **Production**  | HTTPS demo host + `/api/*` via nginx; JVM ports internal/local | `main`      |
 
 
 ## CI 
@@ -51,10 +51,10 @@
 ### Flow 
 
 ```
-┌──────────────┐   ┌──────────┐   ┌──────────────┐   ┌──────────────┐
-│ Local Build  │──▶│  Commit │──▶│ GitHub      │──▶│ Manual Deploy│
-│ & Testing    │   │          │   │ Actions CI   │   │ (Azure VM)   │
-└──────────────┘   └──────────┘   └──────────────┘   └──────────────┘
+┌──────────────┐   ┌──────────┐   ┌──────────────────────────────┐
+│ Local Build  │──▶│  Commit │──▶│ Manual / scripted deploy (VM) │
+│ & Testing    │   │          │   │ Optional CI when workflows exist │
+└──────────────┘   └──────────┘   └──────────────────────────────┘
 
 ```
 
@@ -64,50 +64,16 @@
 | **Build (Local)** | Maven          | `mvn clean package`               |
 | **Test (Local)**  | JUnit          | `mvn test`                        |
 | **Commit**        | Git            | Push code to GitHub               |
-| **CI Validation** | GitHub Actions | Build & test on clean environment |
+| **CI Validation** | *(Optional)* GitHub Actions per repo | Add workflows when maintained |
 | **Deploy**        | Docker Compose | Manual deployment to Azure VM     |
 
-CI code example (matchmaking-service)
-
-```yml
-name: CI
-
-on:
-  push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
-
-jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Java 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-          cache: maven
-
-      - name: Run tests and generate coverage
-        run: mvn clean verify
-
-      - name: Upload JaCoCo report
-        uses: actions/upload-artifact@v4
-        with:
-          name: jacoco-report
-          path: target/site/jacoco
-```
+*Example GitHub Actions workflows may live in individual service repositories; the monorepo snapshot may not include `.github/workflows` at the root.*
 
 ## Environment Variables
 
 | Variable          | Description               | Required | Example                                    |
 | ----------------- | ------------------------- | -------- | ------------------------------------------ |
-| `AUTH_JWT_SECRET` | JWT signing secret        | Yes      | `f2ba841a73c4aa9ffae472fc53213sasfffhe1a3` |
+| `AUTH_JWT_SECRET` | JWT signing secret (≥32 bytes; dev-only default in properties) | Yes | `<set-via-env-never-commit>` |
 | `DB_SERVER`       | PostgreSQL host           | Yes      | `autochess-db.postgres.database.azure.com` |
 | `DB_PORT`         | PostgreSQL port           | Yes      | `5432`                                     |
 | `DB_USERNAME`     | Database user             | Yes      | `dbuser`                                   |
@@ -158,7 +124,7 @@ docker compose up -d --build
 After starting the server:
 
 1. Open Swagger UI: [swagger](http://localhost:8081/swagger-ui.html)
-2. Check health: [health](http://localhost:8081/actuator/health) and [VM version](http://134.112.154.167:8081/actuator/health)
+2. Check health on the VM/service host if Actuator is exposed (replace host): `http://<host>:8081/actuator/health`
 3. Test authentication flow in swagger or Postman: Register → Login → Refresh token 
 
 ## Monitoring & Logging
@@ -168,5 +134,5 @@ After starting the server:
 | **Application Logs**    | Docker logs         | Azure VM (SSH)   |
 | **Database Monitoring** | Azure Portal        | Azure PostgreSQL |
 | **Container Status**    | Docker Compose      | VM CLI           |
-| **Uptime**              | Manual              | http://<VM_PUBLIC_IP>:8081/actuator/health|
+| **Uptime**              | Manual              | Actuator health URLs per exposed service |
 

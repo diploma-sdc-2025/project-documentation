@@ -1,11 +1,11 @@
 # 2. Technical Implementation
 
-This section covers the technical architecture, design decisions, and implementation details.
+This section covers architecture, design decisions, and implementation details.
 
 ## Contents
 
 - [Tech Stack](tech-stack.md)
-- [Criteria Documentation](criteria/) - ADR for each evaluation criterion
+- [Criteria](criteria/) — one page per evaluation criterion
 - [Deployment](deployment.md)
 
 ## Solution Architecture
@@ -18,67 +18,36 @@ This section covers the technical architecture, design decisions, and implementa
 
 | Component | Description | Technology |
 | --------- | ----------- | ---------- |
-| **Client (Interaction layer)** | API interaction via Swagger UI and Postman; UX flows shown in Figma | Swagger UI, Postman, Figma |
-| **Auth Service** | Registration, login, JWT issuance/validation, user storage | Spring Boot, Spring Security, JWT, PostgreSQL |
-| **Matchmaking Service** | Queue players, pair opponents, create match sessions | Spring Boot, PostgreSQL |
-| **Game Service**| Core game state, shop, economy, board management, upgrades | Spring Boot, Spring Data JPA, PostgreSQL |
-| **Battle Service** | Executes battle resolution; integrates with Stockfish for analysis/move selection | Spring Boot, Stockfish (UCI), PostgreSQL |
-| **Analytics/Monitoring** | Health checks and gameplay/system metrics | Spring Boot Actuator, Micrometer |
-| **Databases** | Database-per-service; isolated schemas per microservice | PostgreSQL × N |
-| **Deployment**| Containerized services deployed to cloud | Docker, Docker Compose, Azure App Service |
+| **SPA** | Browser client: queue, shop/board, battle UI | React, TypeScript, Vite |
+| **Auth Service** | Registration, login, JWT, user/rating integration | Spring Boot, PostgreSQL |
+| **Matchmaking Service** | Redis-backed queue, pairing, calls Game Service | Spring Boot |
+| **Game Service** | Match lifecycle, shop, inventory, battle orchestration | Spring Boot, Redis, PostgreSQL |
+| **Battle Service** | Stockfish evaluation, battle outcomes | Spring Boot |
+| **Analytics Service** | Events, leaderboard, Redis ingestion, **SSE** admin stream | Spring Boot, PostgreSQL, Redis |
+| **Reverse proxy** | TLS, SPA or Vite upstream, `/api/*` routing | nginx |
 
+### Data Flow (summary)
 
-### Data Flow
-
-```
-[Player Action via Postman/Swagger]
-        │
-        ▼
-[Auth Service] → JWT issued
-        │
-        ▼
-[Matchmaking Service] join queue
-        │
-        ▼
-[Game Service] match created + initial state
-        │
-        ▼
-[Game Service] shop/purchase/place/upgrade actions
-        │
-        ▼
-[Battle Service] battle requested
-        │
-        ├─▶ [Stockfish] analyze position / choose moves (UCI)
-        │
-        ▼
-[Battle result stored] → [Game state updated] → [Metrics emitted]
-        │
-        ▼
-[Repeats until 1 player remains alive]
-        │
-        ▼
-
-[Game ends] → [Final results shown]
-```
+1. Player uses SPA → REST to Auth / Matchmaking / Game / Battle / Analytics as needed.
+2. Game Service persists authoritative match state; Battle Service runs Stockfish.
+3. Analytics consumes Redis channel events and exposes REST + **SSE** for operators.
 
 ## Key Technical Decisions
 
-| Decision | Rationale | Alternatives Considered |
-| -------- | --------- | ----------------------- |
-| Microservices architecture (multiple Spring Boot services) | Demonstrates distributed systems skills; separation of concerns; aligns with diploma complexity goals | Monolith REST API (simpler but less effective)|
-| Database-per-service (PostgreSQL per microservice) | Aligns with microservices best practice; isolates data ownership and schema changes | Shared database (simpler but couples services)|
-| REST APIs + Swagger for primary interaction | Easy testing and documentation; fits diploma requirement; works without frontend | message queue (adds complexity) |
-| WebSockets for real-time updates | Enables push-based updates for match/battle status;| Simple REST|
-| Stockfish used by Battle Service | Provides strong chess analysis and move selection, avoids implementing a chess engine from scratch | Fully custom engine too complex|
-| Docker + Azure App Service for Containers | Reproducible environments; mandatory diploma deployment requirement | AWS  |
-
+| Decision | Rationale |
+| -------- | --------- |
+| Multiple Spring Boot services | Separation of auth, queue, game logic, engine CPU, analytics |
+| REST + selective polling (client) | Phased gameplay does not require WebSockets for every interaction |
+| SSE for admin analytics | Server→browser push without full WebSocket infrastructure |
+| PostgreSQL + Flyway | Repeatable schemas per service |
+| Redis | Queue, caches, analytics pub/sub |
+| OpenAPI | Contract for SPA and graders |
 
 ## Security Overview
 
 | Aspect | Implementation |
 |--------|----------------|
-| **Authentication** | JWT Bearer tokens issued by Auth Service (login/register) |
-| **Authorization** | Role-based access at endpoint level |
-| **Data Protection** | HTTPS in production (Azure); passwords hashed with BCrypt; no plain-text credentials stored |
-| **Input Validation** | Spring validation annotations on DTOs; consistent error responses |
-| **Secrets Management** | Environment variables for JWT secret, DB credentials;|
+| **Authentication** | JWT Bearer; shared signing secret across validating services |
+| **Authorization** | Protected routes per service; admin tokens for analytics dashboards |
+| **Transport** | HTTPS in production (nginx) |
+| **Secrets** | Environment variables — never commit production secrets |

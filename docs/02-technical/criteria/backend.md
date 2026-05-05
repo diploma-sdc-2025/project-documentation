@@ -4,215 +4,144 @@
 
 ### Status
 
-**Status:** Accepted
+**Status:** Accepted  
 
-**Date:** 2026-01-03
+**Date:** 2026-05-01 (revised 2026-05-04)
 
 ### Context
 
-The diploma project requires a backend system demonstrating:
-- RESTful API design
-- Clear separation of concerns
-- Persistent data storage
-- Maintainability
-- Integration with deployment, analytics, and testing criteria
-The system must support a turn-based auto-battler game flow including authentication, matchmaking, game state management, battle execution, and analytics.
-Constraints include:
-- Solo developer
-- Limited time
-- Knowledge of Spring Boot, PostgreSQL, Docker, and Azure
-- ≥70% automated test coverage
+The diploma backend must show:
+
+- **REST** HTTP APIs with clear boundaries  
+- **Persistence** (PostgreSQL + Flyway) where each service owns its data  
+- **Maintainability** (layered packages, tests)  
+- Integration with **deployment**, **analytics**, and **automated testing** (including **JaCoCo ≥70%** on `analytics-service`)
+
+The domain is a turn-based auto-battler flow: **authentication → matchmaking → game (shop/board) → battle evaluation → results/ratings → analytics**.
+
+Constraints: solo developer, fixed timeline, stack centred on **Spring Boot**, **PostgreSQL**, **Redis**, **Docker**, **Azure VM–style** deployment.
 
 ### Decision
 
-A microservices-based backend architecture was implemented using Spring Boot, where each core part is represented by an independent service with its own database:
-Auth Service - user registration, login, JWT handling
-Matchmaking Service - queue management and match creation
-Game Service - match state, shop mechanics, economy, and board state
-Battle Service - battle execution and outcome calculation (Stockfish integration)
-Analytics Service - gameplay events and service health metrics
-Services communicate using REST APIs for commands and WebSockets for real-time updates.
-Each service owns its data using a database-per-service pattern with PostgreSQL, and Redis is used for in-memory operations.
+Use **multiple Spring Boot applications** (not a single monolith):
+
+| Service | Responsibility |
+|---------|----------------|
+| **Auth** | Registration, login, guest session, JWT issuance, user/rating integration |
+| **Matchmaking** | Redis-backed queue; pairs players; triggers match creation in Game |
+| **Game** | Match lifecycle, shop/inventory/board/king, orchestrates battle rounds and rating callbacks |
+| **Battle** | Stockfish-backed evaluation and battle simulation |
+| **Analytics** | Event ingestion (e.g. Redis channel), persistence, leaderboard, **SSE** admin stream |
+
+**Integration style:**
+
+- **Synchronous HTTP (REST)** between browser and services, and between services where designed (e.g. game ↔ auth for ratings).  
+- **Redis** for volatile structures (queue, game caches, analytics fan-in).  
+- **Real-time toward browsers:** the **game loop** does **not** rely on a mandatory WebSocket channel — the SPA uses **REST** with **polling/resync** where needed; **admin analytics** uses **Server-Sent Events** from `analytics-service`. Optional STOMP/WebSocket helpers may exist for analytics but are **not** the primary player transport.
+
+**Data:** PostgreSQL per service pattern with Flyway; **Redis** alongside for ephemeral state.
 
 ### Alternatives Considered
 
-| Alternative | Pros | Cons | Why Not Chosen |
+| Alternative | Pros | Cons | Why not chosen |
 |-------------|------|------|----------------|
-| Monolithic Spring Boot API| Simple to build and deploy| Poor separation of concerns, less depth| Does not demonstrate backend complexity|
-| Shared Database Across Services | Easier queries and joins| schema conflicts, not scalable | Violates microservices principles |
-| Using NoSql Db | Alternative to postgres | Not suitable to the project | Never used before, harder to use |
+| Monolithic Spring Boot | Simpler deploy | Weak separation story for thesis | Rejected for clarity of domains |
+| Shared single PostgreSQL schema for all | Easier joins | Couples services | Rejected |
+| WebSockets for every game update | Push everywhere | More infra/reconnect logic for diploma scope | Not primary choice; REST + polling sufficient |
 
 ### Consequences
 
-**Positive:**
-- Clear separation of responsibilities and services ownership
-- Real-world backend architecture patterns
-- Independent testing, containerization, and deployment per service
+**Positive:** Clear ownership per service; battle CPU isolated; analytics separated.
 
-**Negative:**
-- Higher complexity in service coordination
-- Requires careful API and error-handling design
+**Negative:** More moving parts, ports, and env vars than one JAR.
 
-**Neutral:**
-- Increased boilerplate code compared to monolith (in general harder to make then monolith)
-- Need knowledge of azure deployement
+**Neutral:** Cross-service calls must handle failures and consistent JWT/internal secrets.
 
 ## Implementation Details
 
-### Project Structure
-
-Each microservice follows the following
- structure:
-```
-src/
-├── controller/        # REST & WebSocket endpoints
-├── service/           # Business logic
-├── repository/        # Data access (Spring Data JPA)
-├── entity/            # JPA entities
-├── dto/               # Request/response DTOs
-├── config/            # Security, WebSocket, Redis, Swagger config
-├── exception/         # Centralized error handling
-└── Application.java   # Service entry point
-
-Each service is packaged and deployed independently as a Docker container.
+### Typical package layout (per service)
 
 ```
+src/main/java/.../
+├── controller/     # REST controllers (@RestController)
+├── service/        # Business logic
+├── repository/     # Spring Data JPA where used
+├── entity/         # JPA entities
+├── dto/            # Request/response objects
+├── config/         # Security, Redis, OpenAPI, etc.
+├── exception/      # Global handlers where present
+└── *Application.java
+```
 
-### Key Implementation Decisions
+*(Exact packages vary by service.)*
+
+### Key implementation decisions
 
 | Decision | Rationale |
 |----------|-----------|
-| Spring Boot for all services| Fast development, strong testing and security support |
-| Database-per-service (PostgreSQL) | Ensures loose coupling and data ownership for each service |
-| Redis for game state & queues| High performance for frequently updated, transient data |
-| REST for commands, WebSockets for updates| Separation between actions and real-time notifications|
-| JWT-based authentication | Stateless, scalable, and suitable for distributed services|
+| Spring Boot 3.x + Java 21 | Required stack; good test/monitoring ecosystem |
+| REST as default integration | Browser and Postman-friendly; nginx-friendly |
+| Redis for queues/caches | Latency and simplicity for matchmaking and hot keys |
+| JWT | Stateless auth across services with shared signing configuration |
+| Stockfish in Battle Service | Strong evaluation without building a chess engine |
 
-### Code Examples
+### Illustrative patterns (not exhaustive)
 
-**Auth-service**
-```
-    // Login endpoint for user authentication.
-    // Validates credentials and returns a JWT-based AuthResponse.
-    // Demonstrates REST endpoint, validation, and service delegation.
+**Auth — login returns tokens**
 
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(
-            @Valid @RequestBody LoginRequest req) {
-        return ResponseEntity.ok(auth.login(req));
-    }
+```java
+@PostMapping("/login")
+public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest req) {
+    return ResponseEntity.ok(auth.login(req));
+}
 ```
 
-**Matchmaking service**
-```
-    // Allows an authenticated player to join the matchmaking queue.
-    // The user identity is extracted from the JWT via Spring Security's Authentication object.
-    // Returns a response indicating whether the player was added to the queue or was already waiting.
+**Matchmaking — authenticated queue join**
 
-    @PostMapping("/join")
-    public ResponseEntity<QueueJoinResponse> joinQueue(
-            Authentication authentication) {
-
-        return ResponseEntity.ok(
-                service.joinQueue(authentication)
-        );
-    }
+```java
+@PostMapping("/join")
+public ResponseEntity<QueueJoinResponse> joinQueue(Authentication authentication) {
+    return ResponseEntity.ok(service.joinQueue(authentication));
+}
 ```
 
-**Game-service**
-```
-    // Endpoint called by the Matchmaking Service when a match is formed.
-    // Creates a new match instance and initializes game state.
-    // Demonstrates inter-service REST communication.
+**Game — match creation from matchmaking (internal/partner API)**
 
-    @PostMapping("/matches")
-    public MatchResponse createMatch(@Valid @RequestBody CreateMatchRequest req) {
-        return game.createMatch(req);
-    }
-```
+Match creation is invoked from matchmaking via HTTP to game-service; exact path and DTO names match your OpenAPI (`api-docs/reference/openapi.yaml`).
 
-**Battle-service**
-```
-    // Executes an automated battle simulation.
-    // Called by the Game Service once players are ready.
-    // Calls stockfish, which calculates the outcome
+**Battle — evaluation driven by engine**
 
-    @PostMapping("/simulate")
-    public BattleResultResponse simulate(@Valid @RequestBody BattleRequest req) {
-        return battle.simulateBattle(req);
-    }
-```
+Battle endpoints accept FEN/state from game flows and delegate to **Stockfish** via `BattleService`; exact mappings follow `battle-service` controllers in the repo.
 
-**Analytics-service**
-```
-    // Exposes live gameplay and system metrics aggregated from Redis.
-    // Demonstrates real-time analytics and monitoring without impacting core gameplay.
-    // Metrics include queue size, event counts, and last update timestamp.
-    @GetMapping
-    public Map<String, Object> getLiveMetrics() {
-        Map<String, Object> metrics = new HashMap<>();
+**Analytics — operator-facing metrics**
 
-        Object queueSize = redisTemplate.opsForValue().get("analytics:current_queue_size");
-        metrics.put("currentQueueSize", queueSize != null ? queueSize : 0);
-
-        Object totalJoins = redisTemplate.opsForValue().get("analytics:total_queue_joins");
-        metrics.put("totalQueueJoins", totalJoins != null ? totalJoins : 0);
-
-        Long eventsLastMinute = redisTemplate.opsForZSet().zCard("analytics:events:last_minute");
-        metrics.put("eventsLastMinute", eventsLastMinute != null ? eventsLastMinute : 0);
-
-        Object lastUpdated = redisTemplate.opsForValue().get("analytics:last_updated");
-        metrics.put("lastUpdated", lastUpdated);
-
-        Object playerJoins = redisTemplate.opsForValue().get("analytics:event_type:player_join");
-        Object playerLeaves = redisTemplate.opsForValue().get("analytics:event_type:player_leave");
-
-        Map<String, Object> eventsByType = new HashMap<>();
-        eventsByType.put("player_join", playerJoins != null ? playerJoins : 0);
-        eventsByType.put("player_leave", playerLeaves != null ? playerLeaves : 0);
-        metrics.put("eventsByType", eventsByType);
-
-        return metrics;
-    }
-```
-
+Live snapshots and **SSE** (`SseEmitter`) are exposed from **analytics-service**; ingestion often combines **Redis** listeners (`RedisSubscriber`) with persistence in **AnalyticsService** — see source rather than duplicating full Redis key layouts here (they evolve with implementation).
 
 ### Diagrams
 
 ![High level architecture](../../assets/diagrams/High-Level-Architecture.png)
 
 ![Use case diagram](../../assets/diagrams/use-case-diagram.png)
-                        
 
-## Requirements Checklist
+## Requirements checklist
 
-| # | Requirement                  | Status | Evidence / Notes                        |
-| - | ---------------------------- | ------ | --------------------------------------- |
-| 1 | RESTful backend API          | ✅      | Controllers implemented in all services |
-| 2 | Persistent data storage      | ✅      | PostgreSQL used per service             |
-| 3 | Clear separation of concerns | ✅      | Microservices + layered architecture    |
-| 4 | Real-time communication      | ⚠️      | WebSockets implemented for core updates |
-| 5 | Scalable architecture        | ✅      | Dockerized services, Azure deployment   |
+| # | Requirement | Status | Evidence |
+|---|-------------|--------|----------|
+| 1 | REST APIs for core flows | ✅   | Controllers per service |
+| 2 | Persistent storage | ✅   | PostgreSQL + Flyway |
+| 3 | Separation of concerns | ✅ | Service + layer boundaries |
+| 4 | Live behaviour | ✅ |  **SSE** for admin analytics |
+| 5 | Testability | ✅ | `src/test/java` + JaCoCo where configured |
 
+## Known limitations
 
-**Legend:**
-- ✅ Fully implemented
-- ⚠️ Partially implemented
-- ❌ Not implemented
-
-## Known Limitations
-
-| Limitation | Impact | Potential Solution |
-|------------|--------|-------------------|
-| Increased complexity from microservices | More problems occur, harder to deploy | Test everything before pushing, read materials and documentations on the matter |
-| Limited frontend interaction | UX validated only via prototype | Implement real frontend in future |
-| Time limit | Some parts of the system might not be done fully | Fully structured plan of what will be done each point, finish in the future|
+| Topic | Note |
+|--------|------|
+| Distributed debugging | Issues span services — correlate logs and request IDs in demos. |
 
 ## References
 
-- [Spring Boot Documentation](https://spring.io/projects/spring-boot)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
-- [Redis Documentation](https://redis.io/docs)
-- [Project source code](https://github.com/orgs/diploma-sdc-2025/repositories)
-- 
-
+- [Spring Boot](https://spring.io/projects/spring-boot)
+- [PostgreSQL](https://www.postgresql.org/docs/)
+- [Redis](https://redis.io/docs/)
+- OpenAPI: `api-docs/reference/openapi.yaml` in the monorepo

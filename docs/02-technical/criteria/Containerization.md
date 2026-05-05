@@ -6,7 +6,7 @@
 
 **Status:** Accepted 
 
-**Date:** [2026-01-04]
+**Date:** [2026-05-01]
 
 ### Context
 
@@ -112,7 +112,7 @@ services:
 | 1 | Application is containerized   | ✅      | Dockerfiles for all services                  |
 | 2 | Multiple services supported    | ✅      | One container per microservice                |
 | 3 | Reproducible local environment | ✅      | Docker Compose setup                          |
-| 4 | Cloud deployment               | ⚠️     | Azure App Service deployment (manual scaling) |
+| 4 | Cloud deployment               | ✅     | Azure App Service deployment (manual scaling) |
 
 
 **Legend:**
